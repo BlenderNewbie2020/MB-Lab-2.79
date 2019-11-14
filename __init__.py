@@ -1,6 +1,6 @@
 # ManuelbastioniLAB - Copyright (C) 2015-2018 Manuel Bastioni
 # Official site: www.manuelbastioni.com
-# MB-Lab fork website : https://github.com/animate1978/MB-Lab
+# MB-Lab fork website : https://github.com/tawakemono/MB-Lab-2.79
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -23,8 +23,8 @@ bl_info = {
     "location": "View3D > Tools > MB-Lab",
     "description": "A complete lab for character creation",
     "warning": "",
-    'wiki_url': "https://github.com/animate1978/MB-Lab/wiki",
-    'tracker_url': 'https://github.com/animate1978/MB-Lab/issues',
+    'wiki_url': "https://github.com/tawakemono/MB-Lab-2.79/wiki",
+    'tracker_url': 'https://github.com/tawakemono/MB-Lab-2.79/issues',
     "category": "Characters"
 	}
 
@@ -1756,7 +1756,7 @@ class VIEW3D_PT_tools_ManuelbastioniLAB(bpy.types.Panel):
         if gui_status == "NEW_SESSION":
             #box = self.layout.box()
 
-            self.layout.label("https://github.com/animate1978/MB-Lab")
+            self.layout.label("https://github.com/tawakemono/MB-Lab-2.79")
             self.layout.label("CREATION TOOLS")
             self.layout.prop(scn, 'mblab_character_name')
 

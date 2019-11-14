@@ -1,6 +1,6 @@
 # ManuelbastioniLAB - Copyright (C) 2015-2018 Manuel Bastioni
 # Official site: www.manuelbastioni.com
-# MB-Lab fork website : https://github.com/animate1978/MB-Lab
+# MB-Lab fork website : https://github.com/tawakemono/MB-Lab-2.79
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
