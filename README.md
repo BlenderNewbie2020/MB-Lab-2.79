@@ -1,3 +1,25 @@
+# MB-Lab 2.79
+
+MB-Lab 2.79 is initially intended to be a solo project, base on animate1978's reboot of ManuelBastioniLAB, reset to 1.6.5b
+
+## Blender 2.79 Only
+
+For use with the latest version of Blender 2.79 from the Arch Linux repositories, or other recent source.
+
+TODO:
+
+Backport to 2.79
+Is it possible to maintain a single codebase that works for both Blender 2.7 and 2.8? (Yes).
+
+c.f. https://theduckcow.com/2019/update-addons-both-blender-28-and-27-support/
+
+https://www.youtube.com/watch?v=W8PxOFA6AFo
+
+
+
+
+# Previous ReadMe
+
 # MB-Lab
 
 MB-Lab is an attempt to keep the ManuelBastioniLAB Blender addon alive through community efforts.
