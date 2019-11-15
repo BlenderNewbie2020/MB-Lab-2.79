@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import bpy, os, json, time
 import mathutils
 from . import algorithms
+
 
 class RetargetEngine:
 
@@ -53,13 +53,11 @@ class RetargetEngine:
             algorithms.print_log_report("CRITICAL","Retarget database not found. Please check your Blender addons directory.")
             return None
 
-
     def get_selected_posebone(self):
         if bpy.context.selected_pose_bones:
             if len(bpy.context.selected_pose_bones) > 0:
                 return bpy.context.selected_pose_bones[0]
         return None
-
 
     def is_editable_bone(self):
         armat = algorithms.get_active_armature()
@@ -77,14 +75,11 @@ class RetargetEngine:
         else:
             self.is_animated_bone =  "No armature selected"
 
-
-
     def get_action(self,target_armature):
         if target_armature:
             if target_armature.animation_data:
                 return target_armature.animation_data.action
         return None
-
 
     def check_correction_sync(self):
         scn = bpy.context.scene
@@ -102,7 +97,6 @@ class RetargetEngine:
                     self.correction_is_sync = False
                 self.is_editable_bone()
                 self.last_selected_bone_name = selected_bone.name
-
 
     def get_offset_values(self):
         offsets = [0,0,0]
@@ -146,11 +140,9 @@ class RetargetEngine:
                         r_type = "EULER"
         return r_type
 
-
     def get_bone_rot_type(self):
         selected_bone = self.get_selected_posebone()
         self.rot_type =  self.identify_curve_rot(selected_bone)
-
 
     def get_bone_curve_ID(self,selected_bone):
         if self.rot_type == "QUATERNION":
@@ -175,10 +167,8 @@ class RetargetEngine:
                             return (armat.name, animation_curve, animation_data_ID)
         return (None,None,None)
 
-
     def reset_bones_correction(self):
         self.stored_animations = {}
-
 
     def correct_bone_angle(self,channel,value):
         scn = bpy.context.scene
@@ -225,7 +215,6 @@ class RetargetEngine:
                     armat_bone.align_roll(z_axis)
             algorithms.select_and_change_mode(target_armature,'POSE')
 
-
     def reset_skeleton_mapped(self):
         self.skeleton_mapped = {}
 
@@ -263,7 +252,6 @@ class RetargetEngine:
 
         self.map_main_bones(source_armat)
 
-
     def name_combinations(self, bone_identifiers, side):
 
         combinations = []
@@ -285,8 +273,6 @@ class RetargetEngine:
 
         return combinations
 
-
-
     def get_bone_by_exact_ID(self, bones_to_scan, bone_identifiers, side):
         if bones_to_scan:
             name_combinations = self.name_combinations(bone_identifiers, side)
@@ -294,10 +280,6 @@ class RetargetEngine:
                 if b_name.lower() in name_combinations:
                     return b_name
         return None
-
-
-    
-
 
     def get_bone_by_childr(self, armat, bones_to_scan, childr_identifiers, debug = False):
 
@@ -313,7 +295,6 @@ class RetargetEngine:
                             if c1 and c2 and not c3:
                                 return x_bone.name
         return None
-
 
     def get_bones_by_index(self, bones_chain,index_data):
         index = None
@@ -340,7 +321,6 @@ class RetargetEngine:
 
         return None
 
-
     def get_bones_by_parent(self, armat, bones_to_scan, parent_IDs):
         found_bones = set()
         for bone_name in bones_to_scan:
@@ -349,7 +329,6 @@ class RetargetEngine:
                 if algorithms.is_string_in_string(pr_ID, parent_name):
                     found_bones.add(bone_name)
         return found_bones
-
 
     def get_bone_chains(self, armat, bone_names):
         found_chains = []
@@ -365,7 +344,6 @@ class RetargetEngine:
         for bn in armat.data.bones:
             bone_names.append(bn.name)
         return bone_names
-
 
     def is_in_side(self,bone_names,side):
 
@@ -484,7 +462,6 @@ class RetargetEngine:
             center_chains.append(center_chain)
         return left_chains,center_chains,right_chains
 
-
     def filter_chains_by_tail(self,chains,chain_IDs):
         target_chains_lists = []
         if chains:
@@ -510,7 +487,6 @@ class RetargetEngine:
         algorithms.select_and_change_mode(armature,'POSE')#TODO: store the status and restore it
         return chain
 
-
     def clear_chain_by_length(self, chain, armature):
         algorithms.select_and_change_mode(armature,'EDIT')
         for bone_name in chain:
@@ -518,12 +494,11 @@ class RetargetEngine:
             if bone_name in edit_bones:
                 e_bone = edit_bones[bone_name]
                 if e_bone.parent:
-                    if e_bone.length < e_bone.parent.length/8: 
+                    if e_bone.length < e_bone.parent.length/8:
                         algorithms.print_log_report("INFO","Retarget: Bone {0} removed BY LENGTH".format(bone_name))
                         chain.remove(bone_name)
         algorithms.select_and_change_mode(armature,'POSE')#TODO: store the status and restore it
         return chain
-
 
     def filter_chains_by_dotprod(self, armature):
 
@@ -531,7 +506,7 @@ class RetargetEngine:
         self.head_bones_names = self.clear_chain_by_dot_product(self.head_bones_names, armature)
         self.rarm_bones_names = self.clear_chain_by_dot_product(self.rarm_bones_names, armature)
         self.larm_bones_names = self.clear_chain_by_dot_product(self.larm_bones_names, armature)
-        
+
         self.pelvis_bones_names = self.clear_chain_by_dot_product(self.pelvis_bones_names, armature)
         self.ltoe_and_leg_names = self.clear_chain_by_dot_product(self.ltoe_and_leg_names, armature)
         self.rtoe_and_leg_names = self.clear_chain_by_dot_product(self.rtoe_and_leg_names, armature)
@@ -547,16 +522,14 @@ class RetargetEngine:
         self.lfinger3_bones_names = self.clear_chain_by_dot_product(self.lfinger3_bones_names, armature)
         self.lfinger4_bones_names = self.clear_chain_by_dot_product(self.lfinger4_bones_names, armature)
 
-
     def filter_chains_by_length(self, armature):
 
-        
         self.head_bones_names = self.clear_chain_by_length(self.head_bones_names, armature)
         self.rarm_bones_names = self.clear_chain_by_length(self.rarm_bones_names, armature)
         self.larm_bones_names = self.clear_chain_by_length(self.larm_bones_names, armature)
         self.rleg_bones_names = self.clear_chain_by_length(self.rleg_bones_names, armature)
         self.lleg_bones_names = self.clear_chain_by_length(self.lleg_bones_names, armature)
-        
+
         self.ltoe_and_leg_names = self.clear_chain_by_length(self.ltoe_and_leg_names, armature)
         self.rtoe_and_leg_names = self.clear_chain_by_length(self.rtoe_and_leg_names, armature)
 
@@ -607,7 +580,6 @@ class RetargetEngine:
                     result_chain = chain
                     return result_chain
         return result_chain
-
 
     def identify_bone_chains(self,chains, debug = False):
         arm_chain_IDs = ["arm","elbow","hand","wrist","finger","thumb","index","ring","pink","mid"]
@@ -745,11 +717,9 @@ class RetargetEngine:
             return len(m_string)
         return 1000
 
-
     def get_bone_by_similar_ID(self, bones_to_scan, bone_identifiers, side):
         diff_length = 100
         result = None
-
 
         if bones_to_scan:
             for bone_name in bones_to_scan:
@@ -758,8 +728,6 @@ class RetargetEngine:
                     diff_length = score
                     result = bone_name
         return result
-
-
 
     def find_bone(self,armat,bone_type,search_method):
 
@@ -870,7 +838,6 @@ class RetargetEngine:
         else:
             return None
 
-
     def bone_parent_name(self,armat,b_name):
         x_bone = self.get_bone(armat,b_name)
         if x_bone:
@@ -917,7 +884,6 @@ class RetargetEngine:
         else:
             algorithms.print_log_report("WARNING","Warning: Can't get the edit bone of {0} because the mode is {1}".format(bpy.context.scene.objects.active,bpy.context.object.mode))
         return None
-
 
     def get_mapped_name(self, b_name):
         if b_name in self.skeleton_mapped:
@@ -1038,7 +1004,6 @@ class RetargetEngine:
         bpy.ops.nla.bake(frame_start=f_range[0], frame_end=f_range[1],only_selected=False, visual_keying=True, clear_constraints=False, use_current_action=True, bake_types={'POSE'})
         self.remove_armature_constraints(target_armat)
 
-
     def reset_bones_rotations(self,armat):
         reset_val =  mathutils.Quaternion((1.0, 0.0, 0.0, 0.0))
         for p_bone in armat.pose.bones:
@@ -1051,7 +1016,6 @@ class RetargetEngine:
             else:
                 reset_val =  mathutils.Euler((0.0, 0.0, 0.0))
                 p_bone.rotation_euler = reset_val
-
 
     #TODO skeleton structure check
     def calculate_skeleton_vectors(self,armat,armat_type,rot_type):
@@ -1106,7 +1070,6 @@ class RetargetEngine:
 
         return None
 
-
     def define_angle_direction(self,vect1,vect2,rot_axis,angle):
 
         angle1 = mathutils.Quaternion(rot_axis, angle)
@@ -1129,11 +1092,9 @@ class RetargetEngine:
 
         return mathutils.Quaternion((0.0, 0.0, 1.0), 0)
 
-
     def align_skeleton(self,target_armat,source_armat):
         self.calculate_skeleton_rotations(target_armat,source_armat,"ALIGN_SPINE")
         self.calculate_skeleton_rotations(target_armat,source_armat,"ALIGN_SHOULDERS")
-
 
     def calculate_skeleton_rotations(self,target_armat,source_armat,rot_type):
 
@@ -1154,13 +1115,10 @@ class RetargetEngine:
         else:
             algorithms.print_log_report("WARNING","Cannot calculate the source vector for armature alignment")
 
-
-
     def rotate_skeleton(self,armat,rot_quat):
         armat.rotation_mode = 'QUATERNION'
         armat.rotation_quaternion = rot_quat
         bpy.context.scene.update()
-
 
     def use_animation_pelvis(self,target_armat,source_armat):
 
@@ -1202,8 +1160,6 @@ class RetargetEngine:
                                     target_pelvis.head = p1a+v1
                                     target_pelvis.tail = target_pelvis.head + v2
                         algorithms.select_and_change_mode(target_armat,'POSE')
-
-
 
     def armature_height(self,armat,armat_type):
 
@@ -1323,7 +1279,7 @@ class RetargetEngine:
             self.clear_animation(armat)
             algorithms.stop_animation()
             for p_bone in armat.pose.bones:
-                algorithms.reset_bone_rot(p_bone)                
+                algorithms.reset_bone_rot(p_bone)
                 if reset_location:
                     if p_bone.name == "pelvis":
                         p_bone.location = [0,0,0]
@@ -1357,7 +1313,6 @@ class RetargetEngine:
             fp = open(filepath, 'w')
             json.dump(matrix_data,fp)
             fp.close()
-
 
     def load_pose(self,filepath, target_armature = None, use_retarget = False):
 
@@ -1400,8 +1355,6 @@ class RetargetEngine:
                 algorithms.play_animation()
         algorithms.print_log_report("INFO","Animation loaded in {0} sec.".format(time.time()-time1))
 
-
-
     def load_bvh(self,bvh_path):
 
         bpy.context.scene.frame_end = 0
@@ -1413,8 +1366,6 @@ class RetargetEngine:
                 )
         except:
             algorithms.print_log_report("WARNING","Standard bvh operator not found: can't import animation.")
-
-
 
     def retarget(self, target_armature, source_armature, bake_animation = True):
 
@@ -1452,14 +1403,12 @@ class ExpressionEngineShapeK:
                 "expressions_comb",
                 "anime_expressions")
 
-
         self.expressions_labels = set()
         self.human_expressions_data = self.load_expression_database(self.human_expression_path)
         self.anime_expressions_data = self.load_expression_database(self.anime_expression_path)
         self.expressions_data = {}
         self.model_type = "NONE"
         self.has_data = True
-
 
     def identify_model_type(self):
         self.model_type = "NONE"
@@ -1474,7 +1423,6 @@ class ExpressionEngineShapeK:
                 if "Expressions_IDAnime_max" in current_shapekes_names:
                     self.model_type = "ANIME"
                     return
-
 
     def load_expression(self, filepath):
 
@@ -1494,9 +1442,7 @@ class ExpressionEngineShapeK:
 
             return char_data
 
-
-
-    def load_expression_database(self, dirpath):        
+    def load_expression_database(self, dirpath):
         expressions_data = {}
         if algorithms.exists_database(dirpath):
             for expression_filename in os.listdir(dirpath):
@@ -1507,29 +1453,25 @@ class ExpressionEngineShapeK:
                     expressions_data[e_item] = self.load_expression(expression_filepath)
         return expressions_data
 
-
-
-
     def sync_expression_to_GUI(self):
         #Process all expressions: reset all them and then update all them.
-        #according the GUI value. TODO: optimize.         
+        #according the GUI value. TODO: optimize.
 
         obj = algorithms.get_active_body()
         for expression_name in self.expressions_data.keys():
-            
+
             # Perhaps these two lines are not required
-            if not hasattr(obj, expression_name):              
+            if not hasattr(obj, expression_name):
                 setattr(obj, expression_name, 0.0)
-            
-            if hasattr(obj, expression_name):                
+
+            if hasattr(obj, expression_name):
                 self.reset_expression(expression_name)
 
         for expression_name in sorted(self.expressions_data.keys()):
             if hasattr(obj, expression_name):
                 express_val = getattr(obj, expression_name)
                 if express_val != 0:
-                    self.update_expression(expression_name, express_val)        
-
+                    self.update_expression(expression_name, express_val)
 
     def reset_expressions_GUI(self):
         obj = algorithms.get_active_body()
@@ -1537,7 +1479,6 @@ class ExpressionEngineShapeK:
             if hasattr(obj, expression_name):
                 setattr(obj, expression_name, 0.0)
                 self.reset_expression(expression_name)
-
 
     def update_expressions_data(self):
         self.identify_model_type()
@@ -1548,17 +1489,15 @@ class ExpressionEngineShapeK:
         if self.model_type == "NONE":
             self.expressions_data = {}
 
+    def update_expression(self, expression_name, express_val):
 
-
-    def update_expression(self, expression_name, express_val):       
-        
         obj = algorithms.get_active_body()
         if obj:
-            if not obj.data.shape_keys:                
+            if not obj.data.shape_keys:
                 return None
 
-            if expression_name in self.expressions_data:                
-                expr_data = self.expressions_data[expression_name]                
+            if expression_name in self.expressions_data:
+                expr_data = self.expressions_data[expression_name]
                 for name,value in expr_data.items():
 
                     sk_value = 0
@@ -1569,7 +1508,7 @@ class ExpressionEngineShapeK:
                         name = name+"_max"
                         sk_value = (value-0.5)*2
 
-                    sk_value = sk_value*express_val                    
+                    sk_value = sk_value*express_val
 
                     if sk_value != 0:
                         if hasattr(obj.data.shape_keys,'key_blocks'):
@@ -1579,13 +1518,11 @@ class ExpressionEngineShapeK:
                             else:
                                 algorithms.print_log_report("WARNING","Expression {0}: shapekey {1} not found".format(expression_name,name))
 
-
-
     def reset_expression(self, expression_name):
         obj = algorithms.get_active_body()
 
         if obj:
-            if not obj.data.shape_keys:                
+            if not obj.data.shape_keys:
                 return None
             if expression_name in self.expressions_data:
                 expr_data = self.expressions_data[expression_name]
@@ -1600,19 +1537,15 @@ class ExpressionEngineShapeK:
                         if name in obj.data.shape_keys.key_blocks:
                             obj.data.shape_keys.key_blocks[name].value = 0
 
-
     def keyframe_expression(self):
         obj = algorithms.get_active_body()
         scn = bpy.context.scene
 
         if obj:
-            if not obj.data.shape_keys:                
+            if not obj.data.shape_keys:
                 return None
             if hasattr(obj.data.shape_keys,'key_blocks'):
                 for sk in obj.data.shape_keys.key_blocks:
                     if "Expressions_" in sk.name:
                         sk.keyframe_insert(data_path="value")
-
-
-
 

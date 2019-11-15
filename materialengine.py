@@ -22,6 +22,7 @@ import time
 import json
 from . import algorithms
 
+
 class MaterialEngine:
 
     def __init__(self, obj_name, character_config):
@@ -33,12 +34,10 @@ class MaterialEngine:
         self.image_specular_file = character_config["texture_specular"]
         self.image_subdermal_file = character_config["texture_subdermal"]
         self.image_displacement_file = character_config["name"]+"_displ.png"
-        
 
         self.texture_data_path = os.path.join(data_path,"textures")
         self.texture_dermal_exist = False
         self.texture_displace_exist = False
-
 
         self.generated_disp_modifier_ID = "mbastlab_displacement"
         self.generated_disp_texture_name = "mbastlab_displ_texture"
@@ -64,7 +63,7 @@ class MaterialEngine:
 
         if os.path.isfile(self.image_file_paths["body_spec"]):
             self.texture_dermal_exist = True
-        
+
         if os.path.isfile(self.image_file_paths["body_subd"]):
             self.texture_dermal_exist = True
 
@@ -73,8 +72,6 @@ class MaterialEngine:
 
         self.load_data_images()
         self.generate_displacement_image()
-
-
 
     def load_data_images(self):
         for img_path in self.image_file_paths.values():
@@ -144,7 +141,6 @@ class MaterialEngine:
                 result_img = algorithms.new_image(result_name, size1)
                 algorithms.array_to_image(result_array, result_img)
 
-
     def assign_image_to_node(self, material_name, node_name, image_name):
         algorithms.print_log_report("INFO","Assigning the image {0} to node {1}".format(image_name,node_name))
         mat_node = algorithms.get_material_node(material_name, node_name)
@@ -154,7 +150,6 @@ class MaterialEngine:
         else:
             algorithms.print_log_report("WARNING","Node assignment failed. Image not found: {0}".format(image_name))
 
-
     def get_material_parameters(self):
 
         material_parameters = {}
@@ -163,7 +158,7 @@ class MaterialEngine:
         for material in algorithms.get_object_materials(obj):
             if material.node_tree:
                 for node in algorithms.get_material_nodes(material):
-                    is_parameter = False                    
+                    is_parameter = False
                     for param_identifier in self.parameter_identifiers:
                         if param_identifier in node.name:
                             is_parameter = True
@@ -179,7 +174,7 @@ class MaterialEngine:
             material_name = material.name
             nodes = algorithms.get_material_nodes(material)
             if nodes:
-                for node in nodes:                    
+                for node in nodes:
                     if node.name in  material_parameters:
                         value = material_parameters[node.name]
                         algorithms.set_node_output_value(node, 0, value)
@@ -200,7 +195,6 @@ class MaterialEngine:
                                 self.assign_image_to_node(material.name, node.name, self.image_file_names["body_derm"])
                             if "_skn_disp" in node.name:
                                 self.assign_image_to_node(material.name, node.name, self.image_file_names["body_displ"])
-
 
     def rename_skin_shaders(self, prefix):
         obj = self.get_object()
@@ -224,14 +218,13 @@ class MaterialEngine:
             else:
                 algorithms.print_log_report("WARNING","Cannot create the displacement modifier: data image not found: {0}".format(algorithms.simple_path(self.image_file_paths["displ_data"])))
 
-
     def calculate_displacement_texture(self,age_factor,tone_factor,mass_factor):
-        time1 = time.time()        
+        time1 = time.time()
         disp_data_image_name = self.image_file_names["displ_data"]
-        
-        if disp_data_image_name != "":            
+
+        if disp_data_image_name != "":
             disp_data_image = algorithms.get_image(disp_data_image_name)
-            
+
             if disp_data_image:
 
                 if self.image_file_names["body_displ"] in bpy.data.images:
@@ -244,8 +237,8 @@ class MaterialEngine:
                     disp_tex  = bpy.data.textures[self.generated_disp_modifier_ID]
                 else:
                     algorithms.print_log_report("WARNING","Displace texture not found: {0}".format(self.generated_disp_modifier))
-                    return            
-            
+                    return
+
                 if algorithms.are_squared_images(disp_data_image, disp_img):
                     algorithms.scale_image_to_fit(disp_data_image, disp_img)
                     disp_img.pixels =  self.calculate_disp_pixels(disp_data_image,age_factor,tone_factor,mass_factor)
@@ -254,7 +247,6 @@ class MaterialEngine:
             else:
                 algorithms.print_log_report("ERROR","Displace data image not found: {0}".format(algorithms.simple_path(self.image_file_paths["displ_data"])))
 
-
     def save_texture(self, filepath, shader_target):
         img_name = self.image_file_names[shader_target]
         algorithms.print_log_report("INFO","Saving image {0} in {1}".format(img_name,algorithms.simple_path(filepath)))
@@ -262,8 +254,4 @@ class MaterialEngine:
         algorithms.load_image(filepath) #Load the just saved image to replace the current one
         self.image_file_names[shader_target] = os.path.basename(filepath)
         self.update_shaders()
-
-
-
-
 

@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import bpy, os, json
 import mathutils
 from . import algorithms
@@ -50,7 +49,6 @@ class SkeletonEngine:
                 self.skeleton_template_name = "MBLab_skeleton_muscle_ik"
                 self.groups_filename = character_config["vertexgroup_muscle_file"]
 
-
             self.skeleton_name = character_config["name"]+"_skeleton"
             self.lib_filepath = algorithms.get_blendlibrary_path()
             self.joints_data_path = os.path.join(self.data_path,"joints",self.joints_filename)
@@ -64,11 +62,10 @@ class SkeletonEngine:
             else:
                 obj_armat = algorithms.import_object_from_lib(self.lib_filepath, self.skeleton_template_name, self.skeleton_name)
 
-
             if obj_armat != None:
                 self.store_z_axis()
                 self.armature_visibility = [x for x in obj_armat.layers]
-                self.armature_name = obj_armat.name                
+                self.armature_name = obj_armat.name
                 self.align_bones_z_axis()
                 obj_body.parent = obj_armat
                 self.has_data = True
@@ -127,7 +124,7 @@ class SkeletonEngine:
         if target_armature:
             algorithms.select_and_change_mode(target_armature,'EDIT')
             edit_bones = algorithms.get_edit_bones(target_armature)
-            for e_bone in edit_bones:                
+            for e_bone in edit_bones:
                 if e_bone.name in self.armature_z_axis:
                     z_axis = self.armature_z_axis[e_bone.name]
                     e_bone.align_roll(z_axis)
@@ -146,12 +143,12 @@ class SkeletonEngine:
                     new_group = algorithms.new_vertgroup(obj, group_name)
                     for vert_data in g_data[group_name]:
                         if use_weights:
-                            if type(vert_data) == list:                                
+                            if type(vert_data) == list:
                                 new_group.add([vert_data[0]], vert_data[1], 'REPLACE')
                             else:
                                 algorithms.print_log_report("INFO","Error: wrong format for vert weight")
                         else:
-                            if type(vert_data) == int:                                
+                            if type(vert_data) == int:
                                 new_group.add([vert_data], 1.0, 'REPLACE')
                             else:
                                 algorithms.print_log_report("INFO","Error: wrong format for vert group")
@@ -159,7 +156,6 @@ class SkeletonEngine:
                 algorithms.print_log_report("INFO","Group loaded from {0}".format(algorithms.simple_path(filepath)))
             else:
                 algorithms.print_log_report("WARNING","Vgroup file problem {0}".format(algorithms.simple_path(filepath)))
-
 
     def get_body(self):
         if self.has_data:
@@ -222,9 +218,4 @@ class SkeletonEngine:
             self.align_bones_z_axis()
             algorithms.update_bendy_bones(armat)
             algorithms.set_active_object(current_active_obj)
-
-
-
-
-
 

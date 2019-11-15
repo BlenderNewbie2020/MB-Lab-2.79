@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import bpy
 from . import morphengine, skeletonengine, algorithms, proxyengine, materialengine
 import os
@@ -85,7 +84,6 @@ class HumanModifier:
                 current_val = getattr(obj, prop, 0.5)
                 char_data[prop] = current_val
 
-
     def __lt__(self, other):
         return self.name < other.name
 
@@ -94,6 +92,7 @@ class HumanModifier:
             self.name,
             len(self.properties),
             self.properties)
+
 
 class HumanCategory:
     """
@@ -159,8 +158,8 @@ class Humanoid:
         self.lib_filepath = algorithms.get_blendlibrary_path()
         if self.characters_config:
             self.humanoid_types = self.build_items_list("character_list")
-            self.template_types = self.build_items_list("templates_list")            
-            
+            self.template_types = self.build_items_list("templates_list")
+
     def is_muscle_rig_available(self, character_identifier):
         if self.characters_config[character_identifier]["vertexgroup_muscle_file"] != "":
             return True
@@ -180,7 +179,6 @@ class Humanoid:
                     dsc = self.characters_config[char_id]["description"]
                     item_list.append((char_id,lbl,dsc))
         return item_list
-
 
     def init_database(self,obj,character_identifier,rigging_type):
         scn = bpy.context.scene
@@ -203,7 +201,7 @@ class Humanoid:
 
         self.phenotypes_path = os.path.join(self.data_path, "phenotypes",self.phenotype_data_folder)
         self.presets_path = os.path.join(self.data_path, "presets",self.presets_data_folder)
-        self.restposes_path = os.path.join(self.data_path,"poses","rest_poses")        
+        self.restposes_path = os.path.join(self.data_path,"poses","rest_poses")
 
         self.transformations_data_path = os.path.join(self.data_path,"transformations",self.transformation_filename)
 
@@ -240,7 +238,7 @@ class Humanoid:
         self.load_transformation_database()
         self.add_corrective_smooth_modifier()
         self.add_subdivision_modifier()
-        self.add_displacement_modifier()        
+        self.add_displacement_modifier()
         self.has_data = True
 
     def add_subdivision_modifier(self):
@@ -332,7 +330,6 @@ class Humanoid:
         self.update_character(category_name=category.name, mode = "update_all")
         algorithms.print_log_report("INFO","Category resetted in {0} secs".format(time.time()-time1))
 
-
     def exists_measure_database(self):
         return self.morph_engine.measures_database_exist
 
@@ -357,7 +354,6 @@ class Humanoid:
     def exists_transform_database(self):
         return self.exists_transform_data
 
-
     def automodelling(self,use_measures_from_GUI=False, use_measures_from_dict=None, use_measures_from_current_obj=False, mix=False):
 
         if self.morph_engine.measures_database_exist:
@@ -376,7 +372,6 @@ class Humanoid:
                 for measure_name in self.morph_engine.measures.keys():
                     if measure_name != "body_height_Z":
                         wished_measures[measure_name] = getattr(obj, measure_name, 0.5)/conversion_factor
-
 
                 total_height_Z = 0
                 for measure_name in self.morph_engine.body_height_Z_parts:
@@ -454,24 +449,20 @@ class Humanoid:
         algorithms.print_log_report("INFO","Saving backup character {0}".format(algorithms.simple_path(new_filepath)))
         self.save_character(new_filepath, export_proportions=False, export_materials=True, export_metadata = True)
 
-
     def get_subd_visibility(self):
         obj = self.get_object()
         modfr = algorithms.get_modifier(obj,self.mat_engine.subdivision_modifier_name)
         return algorithms.get_modifier_viewport(modfr)
-
 
     def set_subd_visibility(self,value):
         obj = self.get_object()
         modfr = algorithms.get_modifier(obj,self.mat_engine.subdivision_modifier_name)
         algorithms.set_modifier_viewport(modfr, value)
 
-
     def set_smooth_visibility(self,value):
         obj = self.get_object()
         modfr = algorithms.get_modifier(obj,self.corrective_modifier_name)
         algorithms.set_modifier_viewport(modfr, value)
-
 
     def get_smooth_visibility(self):
         obj = self.get_object()
@@ -484,12 +475,10 @@ class Humanoid:
         modfr = algorithms.get_modifier(obj,self.mat_engine.generated_disp_modifier_ID)
         return algorithms.get_modifier_viewport(modfr)
 
-
     def set_disp_visibility(self,value):
         obj = self.get_object()
         modfr = algorithms.get_modifier(obj,self.mat_engine.generated_disp_modifier_ID)
         algorithms.set_modifier_viewport(modfr, value)
-
 
     def sync_obj_props_to_character_materials(self):
 
@@ -501,7 +490,6 @@ class Humanoid:
             else:
                 algorithms.print_log_report("WARNING","material {0}  not found".format(material_data_prop))
         self.material_realtime_activated = True
-
 
     def update_materials(self, update_textures_nodes = True):
         obj = self.get_object()
@@ -529,7 +517,6 @@ class Humanoid:
 
         algorithms.print_log_report("INFO","Expression corrected in {0} secs".format(time.time()-time1))
 
-
     def reset_character(self):
         time1 = time.time()
         obj = self.get_object()
@@ -540,15 +527,12 @@ class Humanoid:
                     self.character_data[prop] = 0.5
         self.update_character(mode = "update_all")
 
-
         algorithms.print_log_report("INFO","Character reset in {0} secs".format(time.time()-time1))
-
 
     def reset_metadata(self):
         obj = self.get_object()
         for meta_data_prop in self.character_metaproperties.keys():
             self.character_metaproperties[meta_data_prop]=0.0
-
 
     def reset_mesh(self):
         self.morph_engine.reset()
@@ -561,7 +545,6 @@ class Humanoid:
         self.morph_engine.update(update_all_verts=True)
         self.morph_engine.clean_the_cache()
 
-
     def sync_obj_props_to_character_metadata(self):
 
         self.metadata_realtime_activated = False
@@ -573,7 +556,6 @@ class Humanoid:
                 if "last" not in meta_data_prop:
                     algorithms.print_log_report("WARNING","metadata {0}.{1} not found".format(obj.name,meta_data_prop))
         self.metadata_realtime_activated = True
-
 
     def delete_all_properties(self):
         time1 = time.time() #TODO: usare obj.keys per lavorare solo sui valory applicati
@@ -606,7 +588,6 @@ class Humanoid:
         armat = self.sk_engine.get_armature()
         algorithms.print_log_report("INFO","Properties deleted in {0} secs".format(time.time()-time1))
 
-
     def recover_prop_values_from_obj_attr(self):
         obj = self.get_object()
         char_data = {"structural":{}, "metaproperties":{}, "materialproperties":{}}
@@ -625,8 +606,6 @@ class Humanoid:
                 char_data["materialproperties"][prop] = obj[prop]
         self.load_character(char_data)
 
-
-
     def sync_obj_props_to_character_data(self):
         obj = self.get_object()
         self.bodydata_realtime_activated = False
@@ -640,10 +619,8 @@ class Humanoid:
             if prop in self.character_data:
                 self.character_data[prop] = getattr(obj,prop)
 
-
     def sync_internal_data_with_mesh(self):
         self.morph_engine.init_final_form()
-
 
     def sync_gui_according_measures(self):
 
@@ -669,7 +646,6 @@ class Humanoid:
 
         subdivision_value = self.get_subd_visibility()
         self.set_subd_visibility(False)
-
 
         if mode == "update_all":
             update_directly_verts = False
@@ -735,7 +711,6 @@ class Humanoid:
             sync_GUI = False
             sync_GUI_metadata = False
             sync_GUI_materials = False
-
 
         if update_directly_verts:
             self.morph_engine.update(update_all_verts=True)
@@ -844,11 +819,7 @@ class Humanoid:
             self.character_data[prop] = new_val
         self.update_character(mode = "update_all")
 
-
-
-
     def calculate_transformation(self, tr_type):
-
 
         obj = self.get_object()
         #TODO use getattr directly with dictionary
@@ -880,7 +851,6 @@ class Humanoid:
             last_transformation_2 = 0
             last_transformation_1 = -previous_tr_factor
 
-
         if transformation_id in self.transformations_data:
             tr_data = self.transformations_data[transformation_id]
 
@@ -905,7 +875,6 @@ class Humanoid:
 
         else:
             algorithms.print_log_report("WARNING","{0} data not present".format(transformation_id))
-
 
     def init_delta_measures(self):
 
@@ -939,9 +908,7 @@ class Humanoid:
 
                             self.delta_measures[delta_name] = [delta1,delta3]
 
-
         algorithms.print_log_report("INFO","Delta init in {0} secs".format(time.time()-time1))
-
 
     def search_best_value(self,m_name,wished_measure,human_modifier,prop):
 
@@ -978,7 +945,6 @@ class Humanoid:
             value = 0.5
         return value
 
-
     def measure_fitting(self, wished_measures,mix = False):
 
         if self.morph_engine.measures_database_exist:
@@ -1004,7 +970,6 @@ class Humanoid:
                                 self.combine_morphings(modifier)
 
             algorithms.print_log_report("INFO","Measures fitting in {0} secs".format(time.time()-time1))
-
 
     def save_character(self, filepath, export_proportions=True, export_materials=True, export_metadata = True):
         algorithms.print_log_report("INFO","Exporting character to {0}".format(algorithms.simple_path(filepath)))
@@ -1045,7 +1010,6 @@ class Humanoid:
             output_file = open(filepath, 'w')
             json.dump(char_data, output_file)
             output_file.close()
-
 
     def load_character(self, data_source, reset_string = "nothing", reset_unassigned=True, mix=False, update_mode = "update_all"):
 
@@ -1100,11 +1064,9 @@ class Humanoid:
                         else:
                             self.character_data[name] = 0.5
 
-
         for name in self.character_metaproperties.keys():
             if name in meta_data:
                 self.character_metaproperties[name] = meta_data[name]
-
 
         for name in self.character_material_properties.keys():
             if name in material_data:
@@ -1131,7 +1093,6 @@ class Humanoid:
     def load_body_displacement_texture(self, filepath):
         self.mat_engine.load_texture(filepath, "body_displ")
 
-
     def combine_morphings(self, modifier, refresh_only=False, add_vertices_to_update=True):
         """
         Mix shapekeys using smart combo algorithm.
@@ -1157,7 +1118,6 @@ class Humanoid:
                     weights[i],
                     add_vertices_to_update)
 
-
     def load_obj_prototype(self,obj_name):
 
         obj_path = os.path.join(self.data_path,"shared_objs",obj_name+".obj")
@@ -1182,19 +1142,4 @@ class Humanoid:
         obj = self.get_object()
         parameters = {"show_viewport":True,"invert_vertex_group": True, "vertex_group":"head"}
         algorithms.new_modifier(obj, self.corrective_modifier_name, 'CORRECTIVE_SMOOTH', parameters)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

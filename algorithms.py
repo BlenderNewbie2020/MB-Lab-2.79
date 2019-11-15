@@ -1,6 +1,6 @@
 # ManuelbastioniLAB - Copyright (C) 2015-2018 Manuel Bastioni
 # Official site: www.manuelbastioni.com
-# MB-Lab fork website : https://github.com/tawakemono/MB-Lab-2.79
+# MB-Lab-2.79 fork website : https://github.com/tawakemono/MB-Lab-2.79
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -14,26 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-import mathutils
+import logging
 import itertools
 import random
 import time
 import os
-import bpy
 import json
 import array
-
+import mathutils
+import bpy
 
 debug_level = 0
+
 
 def print_log_report(level, text_to_write):
     l = 0
     levels = {"INFO":0, "DEBUG":1, "WARNING":2, "ERROR":3, "CRITICAL":4, }
     if level in levels:
-        l = levels[level]        
+        l = levels[level]
     if l >= debug_level:
         print(level +": " + text_to_write)
+
 
 def is_writeable(filepath):
     writeable = False
@@ -45,6 +46,7 @@ def is_writeable(filepath):
         print("WARNING: Writing permission denied for {0}".format(filepath))
     return writeable
 
+
 def get_data_path():
     addon_directory = os.path.dirname(os.path.realpath(__file__))
     data_dir = os.path.join(addon_directory, "data")
@@ -54,6 +56,7 @@ def get_data_path():
     else:
         print_log_report("CRITICAL","Tools data not found. Please check your Blender addons directory.")
         return None
+
 
 def get_configuration():
     data_path = get_data_path()
@@ -65,6 +68,7 @@ def get_configuration():
             print_log_report("CRITICAL","Configuration database not found. Please check your Blender addons directory.")
             return None
 
+
 def get_blendlibrary_path():
     data_path = get_data_path()
     if data_path:
@@ -72,6 +76,7 @@ def get_blendlibrary_path():
     else:
         print_log_report("CRITICAL","Models library not found. Please check your Blender addons directory.")
         return None
+
 
 def simple_path(input_path, use_basename = True, max_len=50):
     """
@@ -85,13 +90,14 @@ def simple_path(input_path, use_basename = True, max_len=50):
         else:
             return input_path
 
+
 def json_booleans_to_python(value):
-    if value == 0:
-        return True
-    return False
+    return value == 0
+
 
 def quick_dist(p_1, p_2):
     return ((p_1[0]-p_2[0])**2) + ((p_1[1]-p_2[1])**2) + ((p_1[2]-p_2[2])**2)
+
 
 def full_dist(vert1, vert2, axis="ALL"):
     v1 = mathutils.Vector(vert1)
@@ -106,6 +112,7 @@ def full_dist(vert1, vert2, axis="ALL"):
         return abs(v1[1]-v2[1])
     if axis == "Z":
         return abs(v1[2]-v2[2])
+
 
 def exists_database(lib_path):
     result = False
@@ -129,8 +136,9 @@ def length_of_strip(vertices_coords, indices, axis="ALL"):
     for x in range(len(indices)-1):
         v1 = vertices_coords[indices[x]]
         v2 = vertices_coords[indices[x+1]]
-        strip_length += full_dist(v1,v2, axis)
-    return(strip_length)
+        strip_length += full_dist(v1, v2, axis)
+    return strip_length
+
 
 def function_modifier_a(val_x):
     val_y = 0.0
@@ -138,11 +146,13 @@ def function_modifier_a(val_x):
         val_y = 2*val_x-1
     return val_y
 
+
 def function_modifier_b(val_x):
     val_y = 0.0
     if val_x < 0.5:
         val_y = 1-2*val_x
     return val_y
+
 
 def bounding_box(verts_coo, indices, roundness=4):
 
@@ -162,9 +172,10 @@ def bounding_box(verts_coo, indices, roundness=4):
 
     return (box_x, box_y, box_z)
 
+
 def get_bounding_box(v_coords):
 
-    if len(v_coords) > 0:
+    if v_coords:
 
         val_x, val_y, val_z = [], [], []
         for coord in v_coords:
@@ -179,6 +190,7 @@ def get_bounding_box(v_coords):
         return (box_x, box_y, box_z)
 
     return None
+
 
 def load_bbox_data(filepath):
     bboxes = []
@@ -203,8 +215,8 @@ def load_bbox_data(filepath):
             idx_y_min, idx_z_min]
     return bbox_data_dict
 
-def smart_combo(prefix, morph_values):
 
+def smart_combo(prefix, morph_values):
     debug1 = False
     debug2 = False
     tags = []
@@ -212,14 +224,14 @@ def smart_combo(prefix, morph_values):
     weights = []
     max_morph_values = []
 
-    #Compute the combinations and get the max values
+    # Compute the combinations and get the max values
     for v_data in morph_values:
         tags.append(["max", "min"])
         max_morph_values.append(max(v_data))
     for n_data in itertools.product(*tags):
         names.append(prefix+"_"+'-'.join(n_data))
 
-    #Compute the weight of each combination
+    # Compute the weight of each combination
     for n_data in itertools.product(*morph_values):
         weights.append(sum(n_data))
 
@@ -227,7 +239,7 @@ def smart_combo(prefix, morph_values):
     best_val = max(weights)
     toll = 1.5
 
-    #Filter on bestval and calculate the normalize factor
+    # Filter on bestval and calculate the normalize factor
     summ = 0.0
     for i in range(len(weights)):
         weights[i] = max(0, weights[i]-best_val/toll)
@@ -248,6 +260,7 @@ def smart_combo(prefix, morph_values):
             if weights[i] != 0:
                 print(names[i], weights[i])
     return (names, weights)
+
 
 def is_excluded(property_name, excluded_properties):
     for excluded_property in excluded_properties:
@@ -301,6 +314,7 @@ def polygon_forma(list_of_verts):
         form_factors.append(factor)
     return form_factors
 
+
 def average_center(verts_coords):
 
     n_verts = len(verts_coords)
@@ -312,7 +326,7 @@ def average_center(verts_coords):
     return bcenter
 
 
-def linear_interpolation_y(xa,xb,ya,yb,y):
+def linear_interpolation_y(xa, xb, ya, yb, y):
     return (((xa-xb)*y)+(xb*ya)-(xa*yb))/(ya-yb)
 
 
@@ -357,29 +371,24 @@ def correct_morph(base_form, current_form, morph_deltas, bboxes):
     print_log_report("INFO","Morphing corrected in {0} secs".format(time.time()-time1))
     return new_morph_deltas
 
-def check_version(m_vers, min_version = (1,5,0)):
 
-    version_check = False
+def check_version(m_vers, min_version = (1,4,0)):
 
-    #m_vers can be a list, tuple, IDfloatarray or str
-    #so it must be converted in a list.
-    if type(m_vers) is not str:
+    # m_vers can be a list, tuple, IDfloatarray or str
+    # so it must be converted in a list.
+    if not isinstance(m_vers, str):
         m_vers = list(m_vers)
 
     mesh_version = str(m_vers)
-    mesh_version = mesh_version.replace(' ','')
+    mesh_version = mesh_version.replace(' ', '')
     mesh_version = mesh_version.strip("[]()")
-    if len (mesh_version) < 5:
-        print_log_report("WARNING","The current humanoid has wrong format for version")
+    if len(mesh_version) < 5:
+        # logger.warning("The current humanoid has wrong format for version")
         return False
 
     mesh_version = (float(mesh_version[0]), float(mesh_version[2]), float(mesh_version[4]))
-    if mesh_version > min_version:
-        return True
-    else:
-        return False
+    return mesh_version > min_version
 
-    return version_check
 
 def looking_for_humanoid_obj():
         """
@@ -434,13 +443,12 @@ def looking_for_humanoid_obj():
         return("FOUND",name)
 
 
-
-
 def is_string_in_string(b_string, b_name):
     if b_string and b_name:
         if b_string.lower() in b_name.lower():
             return True
     return False
+
 
 def is_too_much_similar(string1,string2,val=2):
     s1 = set(string1)
@@ -454,6 +462,7 @@ def is_too_much_similar(string1,string2,val=2):
     if len(s1.intersection(s2)) > threshold:
         return True
     return False
+
 
 def is_in_list(list1,list2,position="ANY"):
 
@@ -469,6 +478,7 @@ def is_in_list(list1,list2,position="ANY"):
                 if element1.lower() in element2[len(element1):].lower():
                     return True
     return False
+
 
 def load_json_data(json_path, description=None):
     if os.path.isfile(json_path):
@@ -489,6 +499,7 @@ def load_json_data(json_path, description=None):
         if simple_path(json_path) != "":
             print_log_report("WARNING","File not found: {0}".format(simple_path(json_path)))
         return None
+
 
 def less_boundary_verts(obj, verts_idx, iterations=1):
     polygons = obj.data.polygons
@@ -515,6 +526,7 @@ def kdtree_from_mesh_polygons(mesh):
     research_tree.balance()
     return research_tree
 
+
 def kdtree_from_obj_polygons(obj,indices_of_polygons_subset = None):
     polygons = []
     if indices_of_polygons_subset != None:
@@ -528,6 +540,7 @@ def kdtree_from_obj_polygons(obj,indices_of_polygons_subset = None):
     research_tree.balance()
     return research_tree
 
+
 def kdtree_from_mesh_vertices(mesh):
     vertices = mesh.vertices
     research_tree = mathutils.kdtree.KDTree(len(vertices))
@@ -536,11 +549,13 @@ def kdtree_from_mesh_vertices(mesh):
     research_tree.balance()
     return research_tree
 
+
 def import_mesh_from_lib(lib_filepath, name):
     existing_mesh_names = collect_existing_meshes()
     append_mesh_from_library(lib_filepath, [name])
     new_mesh = get_newest_mesh(existing_mesh_names)
     return new_mesh
+
 
 def get_scene_modifiers_status():
     scene_viewport_status = {}
@@ -548,6 +563,7 @@ def get_scene_modifiers_status():
         obj_name = obj.name
         scene_viewport_status[obj_name] = get_object_modifiers_visibility(obj)
     return scene_viewport_status
+
 
 def get_polygon_vertices_coords(obj_data,index):
 
@@ -568,12 +584,14 @@ def get_polygon_vertices_coords(obj_data,index):
 
     return verts_coords
 
+
 def remove_mesh(mesh, remove_materials = False):
     if remove_materials:
         for material in mesh.materials:
             if material:
                 bpy.data.materials.remove(material, do_unlink=True)
     bpy.data.meshes.remove(mesh, do_unlink=True)
+
 
 def remove_object(obj, delete_mesh = False, delete_materials = False):
     if obj:
@@ -596,12 +614,14 @@ def set_object_layer(obj,n):
             if n in range(n_layer):
                 obj.layers[n] = True
 
+
 def normal_from_points(points):
     if len(points) == 4:
         plane_norm = mathutils.geometry.normal(points[0], points[1], points[2], points[3])
     else:
         plane_norm = mathutils.geometry.normal(points[0], points[1], points[2])
     return plane_norm
+
 
 def apply_object_matrix(obj):
     negative_matrix = False
@@ -615,13 +635,12 @@ def apply_object_matrix(obj):
         obj.data.flip_normals()
     obj.matrix_world = mathutils.Matrix()
 
+
 def set_scene_modifiers_status_by_type(modfr_type, visib):
     for obj in bpy.data.objects:
         for modfr in obj.modifiers:
             if modfr.type == modfr_type:
                 set_modifier_viewport(modfr,visib)
-
-
 
 
 def set_scene_modifiers_status(visib, status_data = None):
@@ -647,6 +666,7 @@ def disable_object_modifiers(obj, types_to_disable = []):
             set_modifier_viewport(modfr,False)
             print_log_report("INFO","Modifier {0} of {1} can create unpredictable fitting results. The lab disabled it".format(modifier_type, obj.name))
 
+
 def get_object_modifiers_visibility(obj):
     #Store the viewport visibility for all modifiers of the obj
     obj_modifiers_status = {}
@@ -657,6 +677,7 @@ def get_object_modifiers_visibility(obj):
             obj_modifiers_status[modfr_name] = modfr_status
     return obj_modifiers_status
 
+
 def set_object_modifiers_visibility(obj, modifier_status):
     #Store the viewport visibility for all modifiers of the obj
     for modfr in obj.modifiers:
@@ -664,14 +685,17 @@ def set_object_modifiers_visibility(obj, modifier_status):
         if modfr_name in modifier_status:
             set_modifier_viewport(modfr,modifier_status[modfr_name])
 
+
 def get_modifier(obj,modifier_name):
     if modifier_name in obj.modifiers:
         return obj.modifiers[modifier_name]
+
 
 def get_modifier_name(modfr):
     if hasattr(modfr,'name'):
         return modfr.name
     return None
+
 
 def apply_modifier(obj, modifier):
     modifier_name = get_modifier_name(modifier)
@@ -682,11 +706,13 @@ def apply_modifier(obj, modifier):
         except:
             print_log_report("WARNING","Problems in applying {0}. Is the modifier disabled?".format(modifier_name))
 
+
 def move_up_modifier(obj, modifier):
     modifier_name = get_modifier_name(modifier)
     set_active_object(obj)
     for n in range(len(obj.modifiers)):
         bpy.ops.object.modifier_move_up(modifier=modifier_name)
+
 
 def move_down_modifier(obj, modifier):
     modifier_name = get_modifier_name(modifier)
@@ -699,6 +725,7 @@ def remove_modifier(obj, modifier_name):
     print("Removing ", modifier_name)
     if modifier_name in obj.modifiers:
         obj.modifiers.remove(obj.modifiers[modifier_name])
+
 
 def disable_modifier(modfr):
     print("Disable ", modfr.name)
@@ -722,6 +749,7 @@ def set_modifier_viewport(modfr,value):
     if hasattr(modfr,'show_viewport'):
         modfr.show_viewport = value
 
+
 def new_modifier(obj, name, modifier_type, parameters):
     if name in obj.modifiers:
         print_log_report("INFO","Modifier {0} already present in {1}".format(modifier_type, obj.name))
@@ -735,12 +763,14 @@ def new_modifier(obj, name, modifier_type, parameters):
                     print_log_report("INFO","Setattr failed for attribute '{0}' of modifier {1}".format(parameter,name))
     return new_modifier
 
+
 def set_modifier_parameter(modifier, parameter, value):
     if hasattr(modifier,parameter):
         try:
             setattr(modifier,parameter,value)
         except AttributeError:
                 print_log_report("INFO","Setattr failed for attribute '{0}' of modifier {1}".format(parameter,modifier_name))
+
 
 def get_object_materials(obj):
     if obj.data.materials:
@@ -760,44 +790,54 @@ def select_and_change_mode(obj,obj_mode):
         except:
             print_log_report("WARNING","Can't change the mode of {0} to {1}.".format(obj.name,obj_mode))
 
+
 def get_selected_objs_names():
     return [obj.name for obj in bpy.context.selected_objects]
+
 
 def select_object_by_name(name):
     obj = get_object_by_name(name)
     if obj:
         obj.select = True
 
+
 def set_selected_objs_by_name(names):
     for name in names:
         if name in bpy.data.objects:
             bpy.data.objects[name].select = True
 
+
 def get_active_object():
     return bpy.context.scene.objects.active
+
 
 def deselect_all_objects():
     for obj in  bpy.data.objects:
         obj.select = False
 
+
 def set_active_object(obj):
     if obj:
         bpy.context.scene.objects.active = obj
+
 
 def get_object_by_name(name):
     if name in bpy.data.objects:
         return bpy.data.objects[name]
     return None
 
+
 def is_object(obj):
     if type(obj) == bpy.types.Object:
         return True
     return False
 
+
 def is_mesh(obj):
     if type(obj) == bpy.types.Mesh:
         return True
     return False
+
 
 def get_objects_selected_names():
     selected_objects = []
@@ -806,12 +846,14 @@ def get_objects_selected_names():
             selected_objects.append(obj.name)
     return selected_objects
 
+
 def get_deforming_armature(obj):
     if obj:
         if obj.type == 'MESH':
             for modf in obj.modifiers:
                 if modf.type == 'ARMATURE':
                     return modf.object
+
 
 def apply_object_transformation(obj):
     if obj:
@@ -839,6 +881,7 @@ def collect_existing_objects():
         if name:
             existing_obj_names.append(name)
     return existing_obj_names
+
 
 def get_newest_object(existing_obj_names):
     for obj in bpy.data.objects:
@@ -879,13 +922,13 @@ def identify_template(obj):
     return None
 
 
-
 def get_template_model(obj):
     template = identify_template(obj)
     config_data = get_configuration()
     if template != None:
         return config_data[template]["template_model"]
     return None
+
 
 def get_template_polygons(obj):
     template = identify_template(obj)
@@ -894,11 +937,11 @@ def get_template_polygons(obj):
         return config_data[template]["template_polygons"]
     return None
 
+
 def is_a_lab_character(obj):
     if get_template_model(obj) != None:
         return True
     return False
-
 
 
 def get_active_body():
@@ -915,6 +958,7 @@ def get_active_body():
                         return c_obj
     return None
 
+
 def is_IK_armature(self, armature = None):
     if not armature:
         armature = get_active_armature()
@@ -925,11 +969,13 @@ def is_IK_armature(self, armature = None):
                     return True
     return False
 
+
 def get_object_parent(obj):
     if obj:
         if hasattr(obj, "parent"):
             return obj.parent
     return None
+
 
 def get_active_armature():
     active_obj =  get_active_object()
@@ -947,6 +993,7 @@ def get_active_armature():
                     return deforming_armature
     return None
 
+
 def get_linked_armature(obj):
     if obj.type == 'MESH':
         for modfr in obj.modifiers:
@@ -960,6 +1007,7 @@ def raw_mesh_from_object(obj, apply_modifiers = False):
         return obj.to_mesh(bpy.context.scene, apply_modifiers, 'PREVIEW')
     return None
 
+
 def get_all_bones_z_axis(armature):
     armature_z_axis = {}
     select_and_change_mode(armature,'EDIT')
@@ -969,6 +1017,7 @@ def get_all_bones_z_axis(armature):
             armature_z_axis[e_bone.name] = e_bone.z_axis.copy()
     select_and_change_mode(armature,'OBJECT')
     return armature_z_axis
+
 
 def reset_bone_rot(p_bone):
     #TODO: check pose mode
@@ -993,11 +1042,13 @@ def get_mesh(name):
     else:
         return None
 
+
 def get_newest_mesh(existing_mesh_names):
     for mesh in bpy.data.meshes:
         if mesh.name not in existing_mesh_names:
             return get_mesh(mesh.name)
     return None
+
 
 def new_shapekey(obj, shapekey_name, slider_min = 0, slider_max = 1.0, value = 1.0):
 
@@ -1025,10 +1076,12 @@ def reset_shapekeys(obj):
         for sk in obj.data.shape_keys.key_blocks:
             sk.value = 0.0
 
+
 def get_object_keys(obj):
     if obj:
         return obj.keys()
     return None
+
 
 def get_vertgroup_verts(obj, vgroup_name):
 
@@ -1045,9 +1098,6 @@ def get_vertgroup_verts(obj, vgroup_name):
     return verts_idxs
 
 
-
-
-
 def set_object_visible(obj):
     if obj:
         print_log_report("DEBUG","Turn the visibility of {0} ON".format(obj.name))
@@ -1057,6 +1107,7 @@ def set_object_visible(obj):
         n = bpy.context.scene.active_layer
         set_object_layer(obj,n) #TODO not perfect because it changes the layer
 
+
 def load_vertices_database(vertices_path):
     vertices = []
     verts = load_json_data(vertices_path,"Vertices data")
@@ -1065,14 +1116,13 @@ def load_vertices_database(vertices_path):
             vertices.append(mathutils.Vector(vert_co))
     return vertices
 
+
 def set_verts_coords_from_file(obj,vertices_path):
     new_vertices = load_vertices_database(vertices_path)
     if obj:
         if len(new_vertices) == len(obj.data.vertices):
             for i,vert in enumerate(obj.data.vertices):
                 vert.co = new_vertices[i]
-
-
 
 
 def generate_items_list(folderpath, file_type = "json"):
@@ -1096,6 +1146,7 @@ def load_image(filepath):
     else:
         print_log_report("INFO","Image {0} not found". format(os.path.basename(filepath)))
 
+
 def new_image(name, img_size, color = (0.5,0.5,0.5,1)):
     print_log_report("INFO","Creating new image {0} with size {1}x{2}". format(name,img_size[0],img_size[1]))
     if name in bpy.data.images:
@@ -1104,6 +1155,7 @@ def new_image(name, img_size, color = (0.5,0.5,0.5,1)):
     new_img = bpy.data.images.new(name,img_size[0],img_size[1])
     new_img.generated_color = color
     return new_img
+
 
 def get_image(name):
     if name:
@@ -1119,6 +1171,7 @@ def get_image(name):
         print_log_report("WARNING","Getting image failed. Image name is {0}".format(name))
     return None
 
+
 def are_squared_images(image1, image2):
     size1 = image1.size
     size2 = image2.size
@@ -1133,6 +1186,7 @@ def are_squared_images(image1, image2):
 
     return True
 
+
 def scale_image_to_fit(image1, image2):
     if are_squared_images(image1, image2):
         size1 = image1.size
@@ -1143,6 +1197,7 @@ def scale_image_to_fit(image1, image2):
 
             if size1[0]*size1[1] < size2[0]*size2[1]:
                 image1.scale(size2[0],size2[1])
+
 
 def save_image(name, filepath, fileformat = 'PNG'):
     img = get_image(name)
@@ -1155,6 +1210,7 @@ def save_image(name, filepath, fileformat = 'PNG'):
     else:
         print_log_report("WARNING","The image {0} cannot be saved because it's not present in bpy.data.images.". format(name))
 
+
 def new_texture(name, image = None):
     if name not in bpy.data.textures:
         new_texture = bpy.data.textures.new(name, type = 'IMAGE')
@@ -1164,17 +1220,21 @@ def new_texture(name, image = None):
         new_texture.image = image
     return new_texture
 
+
 def image_to_array(blender_image):
     return array.array('f',blender_image.pixels[:])
 
+
 def array_to_image(pixel_array, blender_image):
     blender_image.pixels =  pixel_array.tolist()
+
 
 def set_node_image(mat_node,mat_image):
     if mat_node:
         mat_node.image = mat_image
     else:
         print_log_report("WARNING","Node assignment failed. Image not found: {0}".format(image_name))
+
 
 def get_material(material_name):
     for material in bpy.data.materials:
@@ -1191,6 +1251,7 @@ def get_material_nodes(material):
         return None
         print_log_report("WARNING","Material {0} has not nodes".format(material.node))
 
+
 def get_material_node(material_name, node_name):
     material_node = None
     material = get_material(material_name)
@@ -1201,6 +1262,7 @@ def get_material_node(material_name, node_name):
         print_log_report("WARNING","Node not found: {0} in material {1}".format(node_name,material_name))
     return material_node
 
+
 def get_node_output_value(node, index):
     if index in range(len(node.outputs)):
         if hasattr(node.outputs[index], "default_value"):
@@ -1209,6 +1271,7 @@ def get_node_output_value(node, index):
             print_log_report("WARNING","Socket [{0}] has not default_value attribute".format(index))
     else:
         print_log_report("WARNING","Socket [{0}] not in range of node {1} outputs".format(index, node.name))
+
 
 def set_node_output_value(node, index, value):
     if index in range(len(node.outputs)):
@@ -1219,12 +1282,14 @@ def set_node_output_value(node, index, value):
     else:
         print_log_report("WARNING","Socket[{0}] not in range of node {1} outputs".format(index, node.name))
 
+
 def get_edit_bones(armature):
     if bpy.context.mode != 'EDIT_ARMATURE':
         print_log_report("WARNING","Cannot get the edit bones because the obj is not in edit mode")
         return None
     else:
         return armature.data.edit_bones
+
 
 def get_bones(armature):
     if armature.type == 'ARMATURE':
@@ -1233,12 +1298,14 @@ def get_bones(armature):
         print_log_report("WARNING","Cannot get the bones because the obj is not an armature")
         return None
 
+
 def get_pose_bones(armature):
     if bpy.context.mode != 'POSE':
         print_log_report("WARNING","Cannot get the pose bones because the obj is not in pose mode")
         return None
     else:
         return armature.pose.bones
+
 
 def get_edit_bone(armature, name):
     edit_bones = get_edit_bones(armature)
@@ -1247,13 +1314,16 @@ def get_edit_bone(armature, name):
             return edit_bones[name]
     return None
 
+
 def set_bone_rotation(bone, value, mode = 'QUATERNION'):
     if mode == 'QUATERNION':
         bone.rotation_quaternion = value
 
+
 def get_bone_rotation(bone, mode = 'QUATERNION'):
     if mode == 'QUATERNION':
         return bone.rotation_quaternion
+
 
 def has_anime_shapekeys(obj):
 
@@ -1289,11 +1359,13 @@ def get_rest_lengths(armat):
         select_and_change_mode(armat,'POSE')
     return armature_rest_lengths
 
+
 def get_bone_constraint_by_type(bone, constraint_type):
     for constraint in bone.constraints:
         if constraint.type == constraint_type:
             return constraint
     return None
+
 
 def set_bone_constraint_parameter(constraint, parameter, value):
     if hasattr(constraint,parameter):
@@ -1302,6 +1374,7 @@ def set_bone_constraint_parameter(constraint, parameter, value):
         except AttributeError:
                 print_log_report("INFO","Setattr failed for attribute '{0}' of constraint {1}".format(parameter,constraint.name))
 
+
 def get_vertgroup_by_name(obj,group_name):
     if obj:
         if obj.type == 'MESH':
@@ -1309,29 +1382,36 @@ def get_vertgroup_by_name(obj,group_name):
                 return obj.vertex_groups[group_name]
     return None
 
+
 def remove_vertgroups_all(obj):
     obj.vertex_groups.clear()
+
 
 def remove_vertgroup(obj, group_name):
     vertgroup = get_vertgroup_by_name(obj, group_name)
     if vertgroup:
         obj.vertex_groups.remove(vertgroup)
 
+
 def new_vertgroup(obj, group_name):
     return obj.vertex_groups.new(name=group_name)
+
 
 def play_animation():
     if not bpy.context.screen.is_animation_playing:
         bpy.ops.screen.animation_play()
 
+
 def stop_animation():
     if bpy.context.screen.is_animation_playing:
         bpy.ops.screen.animation_play()
+
 
 def get_shapekey_reference(obj):
     if has_shapekeys(obj):
         return obj.data.shape_keys.reference_key
     return None
+
 
 def get_shapekey(obj, shapekey_name):
     shapekey_data = None
@@ -1340,10 +1420,12 @@ def get_shapekey(obj, shapekey_name):
             shapekey_data = obj.data.shape_keys.key_blocks[shapekey_name]
     return shapekey_data
 
+
 def remove_shapekey(obj, shapekey_name):
     shapekey_to_remove = get_shapekey(obj, shapekey_name)
     if shapekey_to_remove:
         obj.shape_key_remove(shapekey_to_remove)
+
 
 def remove_shapekeys_all(obj):
     if has_shapekeys(obj):
@@ -1353,12 +1435,14 @@ def remove_shapekeys_all(obj):
                 obj.shape_key_remove(sk)
         obj.shape_key_remove(obj.data.shape_keys.reference_key)
 
+
 def get_shapekeys_names(obj):
     shapekeys_names = []
     if has_shapekeys(obj):
         for sk in obj.data.shape_keys.key_blocks:
             shapekeys_names.append(sk.name)
     return shapekeys_names
+
 
 def has_shapekeys(obj):
     return hasattr(obj.data.shape_keys,'key_blocks')
@@ -1376,6 +1460,7 @@ def update_bendy_bones(armat):
                 length = armature_rest_lengths[p_bone.name]
                 stretch_to_constraint = get_bone_constraint_by_type(p_bone, 'STRETCH_TO')
                 set_bone_constraint_parameter(stretch_to_constraint, 'rest_length', length)
+
 
 def link_to_scene(obj):
     scn = bpy.context.scene
@@ -1437,7 +1522,6 @@ def append_object_from_library(lib_filepath, obj_names, suffix = None):
             link_to_scene(obj_parent)
 
 
-
 def append_mesh_from_library(lib_filepath, mesh_names, suffix = None):
     scn = bpy.context.scene
 
@@ -1472,6 +1556,7 @@ def is_armature_linked(obj, armat):
                     return True
     return False
 
+
 def has_deformation_vgroups(obj,armat):
     if obj.type == 'MESH':
         if armat:
@@ -1480,6 +1565,7 @@ def has_deformation_vgroups(obj,armat):
                     if b.name == vgroup.name:
                         return True
     return False
+
 
 def is_rigged(obj, armat):
     #if is_armature_linked(obj, armat):
@@ -1501,6 +1587,7 @@ def get_boundary_verts(obj):
                         polygons_dict[str(i)].append(vert_id)
 
     return polygons_dict
+
 
 def get_object_groups(obj):
     obj_groups = {}

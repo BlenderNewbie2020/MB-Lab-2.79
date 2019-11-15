@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
 import bpy
 import mathutils
 from . import algorithms, proxyengine
 import time, json
 import operator
+
 
 class MorphingEngine:
 
@@ -29,7 +29,7 @@ class MorphingEngine:
         data_path = algorithms.get_data_path()
         self.final_form = []
         self.cache_form = []
-        self.obj_name = obj_name        
+        self.obj_name = obj_name
 
         self.vertices_filename = character_config["name"]+"_verts.json"
         self.expressions_filename = character_config["name"]+"_exprs.json"
@@ -41,8 +41,8 @@ class MorphingEngine:
         self.shared_measures_filename = character_config["measures_file"]
         self.shared_bbox_filename = character_config["bounding_boxes_file"]
         self.measures_database_exist = False
-        
-        if self.shared_morphs_filename_extra != "":    
+
+        if self.shared_morphs_filename_extra != "":
             self.shared_morph_extra_data_path = os.path.join(
                 data_path,
                 "morphs",
@@ -61,7 +61,7 @@ class MorphingEngine:
         self.shared_morph_data_path = os.path.join(
             data_path,
             "morphs",
-            self.shared_morphs_filename)        
+            self.shared_morphs_filename)
         self.morph_data_path = os.path.join(
             data_path,
             "morphs",
@@ -82,7 +82,6 @@ class MorphingEngine:
             data_path,
             "vertices",
             self.vertices_filename)
-
 
         if os.path.isdir(self.bodies_data_path):
             if os.path.isfile(self.measures_data_path):
@@ -161,7 +160,6 @@ class MorphingEngine:
     def load_bboxes_database(self, bounding_box_path):
         self.bbox_data = algorithms.load_json_data(bounding_box_path,"Bounding box data")
 
-
     def load_morphs_database(self, morph_data_path):
         time1 = time.time()
         m_data = algorithms.load_json_data(morph_data_path,"Morph data")
@@ -181,7 +179,6 @@ class MorphingEngine:
                 self.morph_modified_verts[morph_name] = modified_verts
             algorithms.print_log_report("INFO","Morph database {0} loaded in {1} secs".format(algorithms.simple_path(morph_data_path),time.time()-time1))
             algorithms.print_log_report("INFO","Now local morph data contains {0} elements".format(len(self.morph_data)))
-
 
     #def apply_finishing_morph(self):
         #"""
@@ -233,7 +230,6 @@ class MorphingEngine:
         else:
             algorithms.print_log_report("ERROR","The 'body_height_Z' measure not present in the analyzed database")
 
-
     def compare_file_proportions(self,filepath):
         char_data = algorithms.load_json_data(filepath,"Proportions data")
         if "proportion_index" in char_data:
@@ -244,7 +240,6 @@ class MorphingEngine:
             return (delta_v.length,filepath)
         else:
             algorithms.print_log_report("INFO","File {0} does not contain proportions".format(algorithms.simple_path(filepath)))
-
 
     def compare_data_proportions(self):
         scores = []
@@ -259,9 +254,6 @@ class MorphingEngine:
         else:
             algorithms.print_log_report("WARNING","Bodies database not found")
         return scores
-
-
-
 
     def correct_morphs(self, names):
         morph_values_cache = {}
@@ -293,8 +285,6 @@ class MorphingEngine:
                         morph_values_cache[morph_name])
         self.update()
 
-
-
     def convert_all_to_blshapekeys(self):
 
         #TODO: re-enable the finishing (finish = True) after some improvements
@@ -305,8 +295,7 @@ class MorphingEngine:
             if "Expression" in morph_name:
                 self.calculate_morph(morph_name, 0.0)
                 self.update()
-        algorithms.new_shapekey(obj, "basis")         
-     
+        algorithms.new_shapekey(obj, "basis")
 
         #Store the character in neutral expression
         obj = self.get_object()
@@ -323,16 +312,13 @@ class MorphingEngine:
                 algorithms.print_log_report("INFO","Converting {} to shapekey".format(morph_name))
                 self.update(update_all_verts=True)
                 new_sk = algorithms.new_shapekey_from_current_vertices(obj, morph_name)
-                new_sk.value = 0               
+                new_sk.value = 0
 
                 #Restore the neutral expression
                 for i in range(len(self.final_form)):
                     self.final_form[i] = stored_vertices[i]
                 self.update(update_all_verts=True)
         algorithms.print_log_report("INFO","Successfully converted {0} morphs in shapekeys".format(counter))
-
-
-
 
     def update(self, update_all_verts=False):
         obj = self.get_object()
@@ -363,7 +349,6 @@ class MorphingEngine:
     def clean_the_cache(self):
         self.cache_form = []
 
-
     def calculate_morph(self, morph_name, val, add_vertices_to_update=True):
 
         if morph_name in self.morph_data:
@@ -379,12 +364,4 @@ class MorphingEngine:
                 self.morph_values[morph_name] = val
         else:
             algorithms.print_log_report("DEBUG","Morph data {0} not found".format(morph_name))
-
-
-
-
-
-
-
-
 
