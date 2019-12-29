@@ -1,18 +1,25 @@
-# ManuelbastioniLAB - Copyright (C) 2015-2018 Manuel Bastioni
-# Official site: www.manuelbastioni.com
-# MB-Lab fork website : https://github.com/tawakemono/MB-Lab-2.79
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# ManuelbastioniLAB-Copyright (C) 2015-2018 Manuel Bastioni
 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MB-Lab-2.79 fork website : https://github.com/BlenderNewbie2020/MB-Lab-2.79
 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 3
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
 
 import bpy
 from . import morphengine, skeletonengine, algorithms, proxyengine, materialengine
@@ -32,6 +39,7 @@ class HumanModifier:
         self.obj_name = obj_name
         self.properties = []
 
+
     def get_object(self):
         """
         Get the blender object. It can't be stored because
@@ -41,8 +49,10 @@ class HumanModifier:
             return bpy.data.objects[self.obj_name]
         return None
 
+
     def add(self, prop):
         self.properties.append(prop)
+
 
     def __contains__(self, prop):
         for propx in self.properties:
@@ -50,12 +60,14 @@ class HumanModifier:
                 return True
         return False
 
+
     def get_properties(self):
         """
         Return the properties contained in the
         modifier. Important: keep unsorted!
         """
         return self.properties
+
 
     def get_property(self, prop):
         """
@@ -65,6 +77,7 @@ class HumanModifier:
             if propx == prop:
                 return propx
         return None
+
 
     def is_changed(self, char_data):
         """
@@ -77,6 +90,7 @@ class HumanModifier:
                 return True
         return False
 
+
     def sync_modifier_data_to_obj_prop(self, char_data):
         obj = self.get_object()
         for prop in self.properties:
@@ -84,8 +98,10 @@ class HumanModifier:
                 current_val = getattr(obj, prop, 0.5)
                 char_data[prop] = current_val
 
+
     def __lt__(self, other):
         return self.name < other.name
+
 
     def __repr__(self):
         return "Modifier <{0}> with {1} properties: {2}".format(
@@ -103,17 +119,21 @@ class HumanCategory:
         self.name = name
         self.modifiers = []
 
+
     def add(self, modifier):
         self.modifiers.append(modifier)
 
+
     def get_modifiers(self):
         return self.modifiers
+
 
     def get_modifier(self, name):
         for modifier in self.modifiers:
             if modifier.name == name:
                 return modifier
         return None
+
 
     def get_all_properties(self):
         """
@@ -128,14 +148,17 @@ class HumanCategory:
         properties.sort()
         return properties
 
+
     def __contains__(self, mdf):
         for modifier in self.modifiers:
             if mdf.name == modifier.name:
                 return True
         return False
 
+
     def __lt__(self, other):
         return self.name < other.name
+
 
     def __repr__(self):
         return "Category {0} with {1} modfiers".format(
@@ -160,15 +183,18 @@ class Humanoid:
             self.humanoid_types = self.build_items_list("character_list")
             self.template_types = self.build_items_list("templates_list")
 
+
     def is_muscle_rig_available(self, character_identifier):
         if self.characters_config[character_identifier]["vertexgroup_muscle_file"] != "":
             return True
         return False
 
+
     def is_ik_rig_available(self, character_identifier):
         if self.characters_config[character_identifier]["joints_offset_file"] != "":
             return True
         return False
+
 
     def build_items_list(self, main_key):
         item_list = []
@@ -177,33 +203,34 @@ class Humanoid:
                 if char_id in self.characters_config:
                     lbl = self.characters_config[char_id]["label"]
                     dsc = self.characters_config[char_id]["description"]
-                    item_list.append((char_id,lbl,dsc))
+                    item_list.append((char_id, lbl, dsc))
         return item_list
 
-    def init_database(self,obj,character_identifier,rigging_type):
+
+    def init_database(self, obj, character_identifier, rigging_type):
         scn = bpy.context.scene
 
         self.has_data = False
         self.obj_name = obj.name
-        algorithms.print_log_report("INFO","Found the humanoid: {0}".format(character_identifier))
+        algorithms.print_log_report("INFO", "Found the humanoid: {0}".format(character_identifier))
 
-        algorithms.print_log_report("INFO","Init the database...")
+        algorithms.print_log_report("INFO", "Init the database...")
 
         self.no_categories = "BasisAsymTest"
         self.categories = {}
         self.bodydata_realtime_activated = True
-        self.sk_engine = skeletonengine.SkeletonEngine(obj,self.characters_config[character_identifier],rigging_type)
+        self.sk_engine = skeletonengine.SkeletonEngine(obj, self.characters_config[character_identifier], rigging_type)
 
         self.character_template_name = self.characters_config[character_identifier]["template_model"]
         self.transformation_filename = self.characters_config[character_identifier]["transformations_file"]
-        self.phenotype_data_folder = self.characters_config[character_identifier]["name"]+"_ptypes"
+        self.phenotype_data_folder = self.characters_config[character_identifier]["name"] + "_ptypes"
         self.presets_data_folder = self.characters_config[character_identifier]["presets_folder"]
 
-        self.phenotypes_path = os.path.join(self.data_path, "phenotypes",self.phenotype_data_folder)
-        self.presets_path = os.path.join(self.data_path, "presets",self.presets_data_folder)
-        self.restposes_path = os.path.join(self.data_path,"poses","rest_poses")
+        self.phenotypes_path = os.path.join(self.data_path, "phenotypes", self.phenotype_data_folder)
+        self.presets_path = os.path.join(self.data_path, "presets", self.presets_data_folder)
+        self.restposes_path = os.path.join(self.data_path, "poses", "rest_poses")
 
-        self.transformations_data_path = os.path.join(self.data_path,"transformations",self.transformation_filename)
+        self.transformations_data_path = os.path.join(self.data_path, "transformations", self.transformation_filename)
 
         self.exists_rest_poses_data = algorithms.exists_database(self.restposes_path)
         self.exists_preset_data = algorithms.exists_database(self.presets_path)
@@ -229,7 +256,7 @@ class Humanoid:
         for morph in self.morph_engine.morph_data.keys():
             self.init_character_data(morph)
 
-        algorithms.print_log_report("INFO","Loaded {0} categories from morph database".format(
+        algorithms.print_log_report("INFO", "Loaded {0} categories from morph database".format(
             len(self.categories)))
         bpy.context.scene.objects.active = obj
         self.measures = self.morph_engine.measures
@@ -241,10 +268,12 @@ class Humanoid:
         self.add_displacement_modifier()
         self.has_data = True
 
+
     def add_subdivision_modifier(self):
         obj = self.get_object()
         parameters = {"levels":1, "render_levels":2, "show_viewport":True, "show_in_editmode":False}
         algorithms.new_modifier(obj, self.mat_engine.subdivision_modifier_name, 'SUBSURF', parameters)
+
 
     def add_displacement_modifier(self):
         obj = self.get_object()
@@ -252,46 +281,56 @@ class Humanoid:
         if disp_img:
             disp_tex = algorithms.new_texture(self.mat_engine.generated_disp_modifier_ID, disp_img)
             parameters = {"texture_coords":'UV', "strength":0.01, "show_viewport":False, "texture":disp_tex}
-            displacement_modifier = algorithms.new_modifier(obj, self.mat_engine.generated_disp_modifier_ID,'DISPLACE', parameters)
+            displacement_modifier = algorithms.new_modifier(obj, self.mat_engine.generated_disp_modifier_ID, 'DISPLACE', parameters)
+
 
     def rename_obj(self, prefix):
         obj = self.get_object()
         if prefix != "":
             obj.name = prefix +"_body"
         else:
-            obj.name = "MBlab_bd"+str(time.time())
+            obj.name = "MBlab_bd" + str(time.time())
+
 
     def rename_armature(self, prefix):
         armat = self.get_armature()
         if prefix != "":
             armat.name = prefix +"_armature"
         else:
-            armat.name ="MBlab_sk"+str(time.time())
+            armat.name ="MBlab_sk" + str(time.time())
+
 
     def rename_materials(self, prefix):
         self.mat_engine.rename_skin_shaders(prefix)
+
 
     def get_object(self):
         if self.obj_name in bpy.data.objects:
             return bpy.data.objects[self.obj_name]
         return None
 
+
     def get_armature(self):
         return self.sk_engine.get_armature()
 
+
     def load_transformation_database(self):
         self.transformations_data = algorithms.load_json_data(self.transformations_data_path, "Transformations database")
+
 
     def get_categories(self):
         categories = self.categories.values()
         return sorted(categories)
 
+
     def get_category(self, name):
         if name in self.categories:
             return self.categories[name]
 
+
     def get_properties_in_category(self, name):
         return self.categories[name].get_all_properties()
+
 
     def init_character_data(self, morph_name):
         """
@@ -307,19 +346,20 @@ class Humanoid:
                 else:
                     category = self.categories[category_name]
 
-                modifier_name = components[0]+"_"+components[1]
+                modifier_name = components[0] + "_" + components[1]
                 modifier = category.get_modifier(modifier_name)
                 if not modifier:
                     modifier = HumanModifier(modifier_name, self.obj_name)
                     category.add(modifier)
 
                 for element in components[1].split("-"):
-                    prop = components[0]+"_" + element
+                    prop = components[0] + "_" + element
                     if prop not in modifier:
                         modifier.add(prop)
                     self.character_data[prop] = 0.5
             else:
-                algorithms.print_log_report("WARNING","Wrong name for morph: {0}".format(morph_name))
+                algorithms.print_log_report("WARNING", "Wrong name for morph: {0}".format(morph_name))
+
 
     def reset_category(self, categ):
         time1 = time.time()
@@ -327,34 +367,43 @@ class Humanoid:
         category = self.get_category(categ)
         for prop in category.get_all_properties():
             self.character_data[prop] = 0.5
-        self.update_character(category_name=category.name, mode = "update_all")
-        algorithms.print_log_report("INFO","Category resetted in {0} secs".format(time.time()-time1))
+        self.update_character(category_name = category.name, mode = "update_all")
+        algorithms.print_log_report("INFO", "Category resetted in {0} secs".format(time.time() - time1))
+
 
     def exists_measure_database(self):
         return self.morph_engine.measures_database_exist
 
+
     def exists_dermal_texture(self):
         return self.mat_engine.texture_dermal_exist
+
 
     def exists_displace_texture(self):
         return self.mat_engine.texture_displace_exist
 
+
     def exists_rest_poses_database(self):
         return self.exists_rest_poses_data
+
 
     def exists_expression_database(self):
         return self.exists_expression_data
 
+
     def exists_preset_database(self):
         return self.exists_preset_data
+
 
     def exists_phenotype_database(self):
         return self.exists_phenotype_data
 
+
     def exists_transform_database(self):
         return self.exists_transform_data
 
-    def automodelling(self,use_measures_from_GUI=False, use_measures_from_dict=None, use_measures_from_current_obj=False, mix=False):
+
+    def automodelling(self, use_measures_from_GUI = False, use_measures_from_dict = None, use_measures_from_current_obj = False, mix = False):
 
         if self.morph_engine.measures_database_exist:
             time2 = time.time()
@@ -362,7 +411,7 @@ class Humanoid:
             n_samples = 3
 
             if use_measures_from_GUI:
-                convert_to_inch = getattr(obj, "mblab_use_inch",False)
+                convert_to_inch = getattr(obj, "mblab_use_inch", False)
                 if convert_to_inch:
                     conversion_factor = 39.37001
                 else:
@@ -383,7 +432,7 @@ class Humanoid:
                 current_shape_verts = []
                 for vert in obj.data.vertices:
                     current_shape_verts.append(vert.co.copy())
-                wished_measures = self.morph_engine.calculate_measures(vert_coords=current_shape_verts)
+                wished_measures = self.morph_engine.calculate_measures(vert_coords = current_shape_verts)
 
             if use_measures_from_dict:
                 wished_measures = use_measures_from_dict
@@ -401,19 +450,22 @@ class Humanoid:
 
             self.measure_fitting(wished_measures, mix)
             self.update_character(mode = "update_directly_verts")
-            algorithms.select_and_change_mode(obj,'OBJECT')
+            algorithms.select_and_change_mode(obj, 'OBJECT')
 
-            algorithms.print_log_report("INFO","Human fitting in {0} secs".format(time.time()-time2))
+            algorithms.print_log_report("INFO", "Human fitting in {0} secs".format(time.time() - time2))
+
 
     def clean_verts_to_process(self):
         self.morph_engine.verts_to_update.clear()
+
 
     def update_displacement(self):
         obj = self.get_object()
         age_factor = obj.character_age
         tone_factor = obj.character_tone
         mass_factor = obj.character_mass
-        self.mat_engine.calculate_displacement_texture(age_factor,tone_factor,mass_factor)
+        self.mat_engine.calculate_displacement_texture(age_factor, tone_factor, mass_factor)
+
 
     def remove_modifiers(self):
         obj = self.get_object()
@@ -422,22 +474,26 @@ class Humanoid:
                 if "armature" not in modf.name:
                     obj.modifiers.remove(modf)
 
+
     def save_body_displacement_texture(self, filepath):
-        self.mat_engine.save_texture(filepath,"body_displ")
+        self.mat_engine.save_texture(filepath, "body_displ")
+
 
     def save_body_dermal_texture(self, filepath):
-        self.mat_engine.save_texture(filepath,"body_derm")
+        self.mat_engine.save_texture(filepath, "body_derm")
+
 
     def save_all_textures(self, filepath):
-        targets = ["body_displ","body_derm"]
+        targets = ["body_displ", "body_derm"]
         for target in targets:
             dir_path = os.path.dirname(filepath)
             filename = os.path.basename(filepath)
             filename_root = os.path.splitext(filename)[0]
             filename_ext = os.path.splitext(filename)[1]
             new_filename = filename_root +"_"+ target+ filename_ext
-            new_filepath = os.path.join(dir_path,new_filename)
-            self.mat_engine.save_texture(new_filepath,target)
+            new_filepath = os.path.join(dir_path, new_filename)
+            self.mat_engine.save_texture(new_filepath, target)
+
 
     def save_backup_character(self, filepath):
 
@@ -445,40 +501,47 @@ class Humanoid:
         filename = os.path.basename(filepath)
         filename_root = os.path.splitext(filename)[0]
         new_filename = filename_root + 'backup.json'
-        new_filepath = os.path.join(dir_path,new_filename)
-        algorithms.print_log_report("INFO","Saving backup character {0}".format(algorithms.simple_path(new_filepath)))
-        self.save_character(new_filepath, export_proportions=False, export_materials=True, export_metadata = True)
+        new_filepath = os.path.join(dir_path, new_filename)
+        algorithms.print_log_report("INFO", "Saving backup character {0}".format(algorithms.simple_path(new_filepath)))
+        self.save_character(new_filepath, export_proportions = False, export_materials = True, export_metadata = True)
+
 
     def get_subd_visibility(self):
         obj = self.get_object()
-        modfr = algorithms.get_modifier(obj,self.mat_engine.subdivision_modifier_name)
+        modfr = algorithms.get_modifier(obj, self.mat_engine.subdivision_modifier_name)
         return algorithms.get_modifier_viewport(modfr)
 
-    def set_subd_visibility(self,value):
+
+    def set_subd_visibility(self, value):
         obj = self.get_object()
-        modfr = algorithms.get_modifier(obj,self.mat_engine.subdivision_modifier_name)
+        modfr = algorithms.get_modifier(obj, self.mat_engine.subdivision_modifier_name)
         algorithms.set_modifier_viewport(modfr, value)
 
-    def set_smooth_visibility(self,value):
+
+    def set_smooth_visibility(self, value):
         obj = self.get_object()
-        modfr = algorithms.get_modifier(obj,self.corrective_modifier_name)
+        modfr = algorithms.get_modifier(obj, self.corrective_modifier_name)
         algorithms.set_modifier_viewport(modfr, value)
+
 
     def get_smooth_visibility(self):
         obj = self.get_object()
-        modfr = algorithms.get_modifier(obj,self.corrective_modifier_name)
+        modfr = algorithms.get_modifier(obj, self.corrective_modifier_name)
         return algorithms.get_modifier_viewport(modfr)
+
 
     def get_disp_visibility(self):
 
         obj = self.get_object()
-        modfr = algorithms.get_modifier(obj,self.mat_engine.generated_disp_modifier_ID)
+        modfr = algorithms.get_modifier(obj, self.mat_engine.generated_disp_modifier_ID)
         return algorithms.get_modifier_viewport(modfr)
 
-    def set_disp_visibility(self,value):
+
+    def set_disp_visibility(self, value):
         obj = self.get_object()
-        modfr = algorithms.get_modifier(obj,self.mat_engine.generated_disp_modifier_ID)
+        modfr = algorithms.get_modifier(obj, self.mat_engine.generated_disp_modifier_ID)
         algorithms.set_modifier_viewport(modfr, value)
+
 
     def sync_obj_props_to_character_materials(self):
 
@@ -488,8 +551,9 @@ class Humanoid:
             if hasattr(obj, material_data_prop):
                 setattr(obj, material_data_prop, value)
             else:
-                algorithms.print_log_report("WARNING","material {0}  not found".format(material_data_prop))
+                algorithms.print_log_report("WARNING", "material {0}  not found".format(material_data_prop))
         self.material_realtime_activated = True
+
 
     def update_materials(self, update_textures_nodes = True):
         obj = self.get_object()
@@ -498,7 +562,8 @@ class Humanoid:
                 self.character_material_properties[prop] = getattr(obj, prop)
         self.mat_engine.update_shaders(self.character_material_properties, update_textures_nodes)
 
-    def correct_expressions(self, correct_all=False):
+
+    def correct_expressions(self, correct_all = False):
         """
         Correct all the expression morphing that are different from 0
         """
@@ -515,7 +580,8 @@ class Humanoid:
         #if finish_it:
             #self.morph_engine.apply_finishing_morph()
 
-        algorithms.print_log_report("INFO","Expression corrected in {0} secs".format(time.time()-time1))
+        algorithms.print_log_report("INFO", "Expression corrected in {0} secs".format(time.time() - time1))
+
 
     def reset_character(self):
         time1 = time.time()
@@ -527,23 +593,28 @@ class Humanoid:
                     self.character_data[prop] = 0.5
         self.update_character(mode = "update_all")
 
-        algorithms.print_log_report("INFO","Character reset in {0} secs".format(time.time()-time1))
+        algorithms.print_log_report("INFO", "Character reset in {0} secs".format(time.time() - time1))
+
 
     def reset_metadata(self):
         obj = self.get_object()
         for meta_data_prop in self.character_metaproperties.keys():
             self.character_metaproperties[meta_data_prop]=0.0
 
+
     def reset_mesh(self):
         self.morph_engine.reset()
+
 
     def store_mesh_in_cache(self):
         self.morph_engine.copy_in_cache()
 
+
     def restore_mesh_from_cache(self):
         self.morph_engine.copy_from_cache()
-        self.morph_engine.update(update_all_verts=True)
+        self.morph_engine.update(update_all_verts = True)
         self.morph_engine.clean_the_cache()
+
 
     def sync_obj_props_to_character_metadata(self):
 
@@ -554,14 +625,15 @@ class Humanoid:
                 setattr(obj, meta_data_prop, value)
             else:
                 if "last" not in meta_data_prop:
-                    algorithms.print_log_report("WARNING","metadata {0}.{1} not found".format(obj.name,meta_data_prop))
+                    algorithms.print_log_report("WARNING", "metadata {0}.{1} not found".format(obj.name, meta_data_prop))
         self.metadata_realtime_activated = True
+
 
     def delete_all_properties(self):
         time1 = time.time() #TODO: usare obj.keys per lavorare solo sui valory applicati
-        algorithms.print_log_report("INFO","Deleting custom properties")
+        algorithms.print_log_report("INFO", "Deleting custom properties")
         obj = self.get_object()
-        props_to_delete = set(["manuellab_vers", "mblab_use_inch","manuellab_rig"])
+        props_to_delete = set(["manuellab_vers", "mblab_use_inch", "manuellab_rig"])
         for category in self.get_categories():
             for modifier in category.get_modifiers():
                 for prop in modifier.get_properties():
@@ -583,10 +655,11 @@ class Humanoid:
             try:
                 del obj[prop]
             except:
-                algorithms.print_log_report("INFO","Property {0} was not used by this character".format(prop))
+                algorithms.print_log_report("INFO", "Property {0} was not used by this character".format(prop))
 
         armat = self.sk_engine.get_armature()
-        algorithms.print_log_report("INFO","Properties deleted in {0} secs".format(time.time()-time1))
+        algorithms.print_log_report("INFO", "Properties deleted in {0} secs".format(time.time() - time1))
+
 
     def recover_prop_values_from_obj_attr(self):
         obj = self.get_object()
@@ -599,28 +672,32 @@ class Humanoid:
         for prop in self.character_metaproperties.keys():
             if prop in obj.keys():
                 char_data["metaproperties"][prop] = obj[prop]
-                char_data["metaproperties"]["last_"+prop] = obj[prop]
+                char_data["metaproperties"]["last_" + prop] = obj[prop]
 
         for prop in self.character_material_properties.keys():
             if prop in obj.keys():
                 char_data["materialproperties"][prop] = obj[prop]
         self.load_character(char_data)
 
+
     def sync_obj_props_to_character_data(self):
         obj = self.get_object()
         self.bodydata_realtime_activated = False
-        for prop,value in self.character_data.items():
+        for prop, value in self.character_data.items():
             setattr(obj, prop, value)
+
 
     def sync_character_data_to_obj_props(self):
         obj = self.get_object()
         self.bodydata_realtime_activated = False
         for prop in obj.keys():
             if prop in self.character_data:
-                self.character_data[prop] = getattr(obj,prop)
+                self.character_data[prop] = getattr(obj, prop)
+
 
     def sync_internal_data_with_mesh(self):
         self.morph_engine.init_final_form()
+
 
     def sync_gui_according_measures(self):
 
@@ -631,13 +708,15 @@ class Humanoid:
             conversion_factor = 39.37001
         else:
             conversion_factor = 100
-        for measure_name,measure_val in measures.items():
+        for measure_name, measure_val in measures.items():
             if hasattr(obj, measure_name):
                 setattr(obj, measure_name, measure_val*conversion_factor)
+
 
     def update_bendy_muscles(self):
         armat = self.get_armature()
         algorithms.update_bendy_bones(armat)
+
 
     def update_character(self, category_name = None, mode = "update_all"):
         time1 = time.time()
@@ -713,7 +792,7 @@ class Humanoid:
             sync_GUI_materials = False
 
         if update_directly_verts:
-            self.morph_engine.update(update_all_verts=True)
+            self.morph_engine.update(update_all_verts = True)
         else:
             if category_name:
                 category = self.categories[category_name]
@@ -728,12 +807,12 @@ class Humanoid:
             else:
                 for category in self.get_categories():
                     for modifier in category.get_modifiers():
-                        self.combine_morphings(modifier, add_vertices_to_update=True)
+                        self.combine_morphings(modifier, add_vertices_to_update = True)
 
         if update_geometry_all:
-            self.morph_engine.update(update_all_verts=True)
+            self.morph_engine.update(update_all_verts = True)
         if update_geometry_selective:
-            self.morph_engine.update(update_all_verts=False)
+            self.morph_engine.update(update_all_verts = False)
         if sync_GUI:
             self.sync_obj_props_to_character_data()
         if sync_GUI_materials:
@@ -753,16 +832,17 @@ class Humanoid:
 
         self.set_subd_visibility(subdivision_value)
 
-        #algorithms.print_log_report("DEBUG","Character updated in {0} secs".format(time.time()-time1))
+        #algorithms.print_log_report("DEBUG", "Character updated in {0} secs".format(time.time() - time1))
 
-    def generate_character(self,random_value,prv_face,prv_body,prv_mass,prv_tone,prv_height,prv_phenotype,set_tone_and_mass,body_mass,body_tone,prv_fantasy):
-        algorithms.print_log_report("INFO","Generating character...")
+
+    def generate_character(self, random_value, prv_face, prv_body, prv_mass, prv_tone, prv_height, prv_phenotype, set_tone_and_mass, body_mass, body_tone, prv_fantasy):
+        algorithms.print_log_report("INFO", "Generating character...")
 
         all_props = [x for x in self.character_data.keys()]
         props_to_process = all_props.copy()
 
         face_keys = ["Eye", "Eyelid", "Nose", "Mouth", "Ear", "Head", "Forehead", "Cheek", "Jaw"]
-        body_keys = ["Armpit", "Elbows", "Chest", "Body", "Arms", "Feet", "Wrists", "Waist", "Torso","Stomach","Shoulders","Pelvis","Neck","Legs","Hands"]
+        body_keys = ["Armpit", "Elbows", "Chest", "Body", "Arms", "Feet", "Wrists", "Waist", "Torso", "Stomach", "Shoulders", "Pelvis", "Neck", "Legs", "Hands"]
         height_keys = ["Length", "Body_Size"]
         mass_keys = ["Mass"]
         tone_keys = ["Tone"]
@@ -819,6 +899,7 @@ class Humanoid:
             self.character_data[prop] = new_val
         self.update_character(mode = "update_all")
 
+
     def calculate_transformation(self, tr_type):
 
         obj = self.get_object()
@@ -874,7 +955,8 @@ class Humanoid:
             self.update_character(mode = "update_metadata")
 
         else:
-            algorithms.print_log_report("WARNING","{0} data not present".format(transformation_id))
+            algorithms.print_log_report("WARNING", "{0} data not present".format(transformation_id))
+
 
     def init_delta_measures(self):
 
@@ -890,32 +972,33 @@ class Humanoid:
 
                             self.character_data[prop] = 0.0
                             self.combine_morphings(modifier)
-                            measure1 = self.morph_engine.calculate_measures(measure_name=m_name)
+                            measure1 = self.morph_engine.calculate_measures(measure_name = m_name)
 
                             self.character_data[prop] = 1.0
                             self.combine_morphings(modifier)
-                            measure3 = self.morph_engine.calculate_measures(measure_name=m_name)
+                            measure3 = self.morph_engine.calculate_measures(measure_name = m_name)
 
                             #Last measure also restores the value to 0.5
                             self.character_data[prop] = 0.5
                             self.combine_morphings(modifier)
-                            measure2 = self.morph_engine.calculate_measures(measure_name=m_name)
+                            measure2 = self.morph_engine.calculate_measures(measure_name = m_name)
 
-                            delta_name = modifier_name+prop
+                            delta_name = modifier_name + prop
 
-                            delta1 = measure1-measure2
-                            delta3 = measure3-measure2
+                            delta1 = measure1 - measure2
+                            delta3 = measure3 - measure2
 
-                            self.delta_measures[delta_name] = [delta1,delta3]
+                            self.delta_measures[delta_name] = [delta1, delta3]
 
-        algorithms.print_log_report("INFO","Delta init in {0} secs".format(time.time()-time1))
+        algorithms.print_log_report("INFO", "Delta init in {0} secs".format(time.time() - time1))
 
-    def search_best_value(self,m_name,wished_measure,human_modifier,prop):
+
+    def search_best_value(self, m_name, wished_measure, human_modifier, prop):
 
         self.character_data[prop] = 0.5
         self.combine_morphings(human_modifier)
-        measure2 = self.morph_engine.calculate_measures(measure_name=m_name)
-        delta_name = human_modifier.name+prop
+        measure2 = self.morph_engine.calculate_measures(measure_name = m_name)
+        delta_name = human_modifier.name + prop
 
         delta1 = self.delta_measures[delta_name][0]
         delta3 = self.delta_measures[delta_name][1]
@@ -934,8 +1017,8 @@ class Humanoid:
             ya = measure2
             yb = measure3
 
-        if ya-yb != 0:
-            value = algorithms.linear_interpolation_y(xa,xb,ya,yb,wished_measure)
+        if ya - yb != 0:
+            value = algorithms.linear_interpolation_y(xa, xb, ya, yb, wished_measure)
 
             if value < 0:
                 value = 0
@@ -945,7 +1028,8 @@ class Humanoid:
             value = 0.5
         return value
 
-    def measure_fitting(self, wished_measures,mix = False):
+
+    def measure_fitting(self, wished_measures, mix = False):
 
         if self.morph_engine.measures_database_exist:
             obj = self.get_object()
@@ -962,17 +1046,18 @@ class Humanoid:
                                 for prop in modifier.get_properties():
 
                                     if mix:
-                                        best_val = self.search_best_value(measure_name,wish_measure,modifier,prop)
-                                        value = (self.character_data[prop]+best_val)/2
+                                        best_val = self.search_best_value(measure_name, wish_measure, modifier, prop)
+                                        value = (self.character_data[prop] + best_val)/2
                                         self.character_data[prop] = value
                                     else:
-                                        self.character_data[prop] = self.search_best_value(measure_name,wish_measure,modifier,prop)
+                                        self.character_data[prop] = self.search_best_value(measure_name, wish_measure, modifier, prop)
                                 self.combine_morphings(modifier)
 
-            algorithms.print_log_report("INFO","Measures fitting in {0} secs".format(time.time()-time1))
+            algorithms.print_log_report("INFO", "Measures fitting in {0} secs".format(time.time() - time1))
 
-    def save_character(self, filepath, export_proportions=True, export_materials=True, export_metadata = True):
-        algorithms.print_log_report("INFO","Exporting character to {0}".format(algorithms.simple_path(filepath)))
+
+    def save_character(self, filepath, export_proportions = True, export_materials = True, export_metadata = True):
+        algorithms.print_log_report("INFO", "Exporting character to {0}".format(algorithms.simple_path(filepath)))
         obj = self.get_object()
         char_data = {"manuellab_vers": self.lab_vers, "structural":dict(), "metaproperties":dict(), "materialproperties":dict()}
 
@@ -988,7 +1073,7 @@ class Humanoid:
 
             if export_materials:
                 for prop in self.character_material_properties.keys():
-                    char_data["materialproperties"][prop] = round(self.character_material_properties[prop],4)
+                    char_data["materialproperties"][prop] = round(self.character_material_properties[prop], 4)
 
             if export_proportions:
                 self.morph_engine.calculate_proportions(self.morph_engine.calculate_measures())
@@ -998,54 +1083,56 @@ class Humanoid:
             json.dump(char_data, output_file)
             output_file.close()
 
+
     def export_measures(self, filepath):
-        algorithms.print_log_report("INFO","Exporting measures to {0}".format(algorithms.simple_path(filepath)))
+        algorithms.print_log_report("INFO", "Exporting measures to {0}".format(algorithms.simple_path(filepath)))
         obj = self.get_object()
         char_data = {"manuellab_vers": self.lab_vers, "measures":dict()}
         if obj:
             measures = self.morph_engine.calculate_measures()
             for measure, measure_val in measures.items():
                 measures[measure] = round(measure_val, 3)
-            char_data["measures"]=measures
+            char_data["measures"] = measures
             output_file = open(filepath, 'w')
             json.dump(char_data, output_file)
             output_file.close()
 
-    def load_character(self, data_source, reset_string = "nothing", reset_unassigned=True, mix=False, update_mode = "update_all"):
+
+    def load_character(self, data_source, reset_string = "nothing", reset_unassigned = True, mix = False, update_mode = "update_all"):
 
         obj = self.get_object()
         log_msg_type = "character data"
 
         if type(data_source) == str:  #TODO: better check of types
             log_msg_type = algorithms.simple_path(data_source)
-            charac_data = algorithms.load_json_data(data_source,"Character data")
+            charac_data = algorithms.load_json_data(data_source, "Character data")
         else:
             charac_data = data_source
 
-        algorithms.print_log_report("INFO","Loading character from {0}".format(log_msg_type))
+        algorithms.print_log_report("INFO", "Loading character from {0}".format(log_msg_type))
 
         if "manuellab_vers" in charac_data:
             if not algorithms.check_version(charac_data["manuellab_vers"]):
-                algorithms.print_log_report("WARNING","{0} created with vers. {1}. Current vers is {2}".format(log_msg_type,charac_data["manuellab_vers"],self.lab_vers))
+                algorithms.print_log_report("WARNING", "{0} created with vers. {1}. Current vers is {2}".format(log_msg_type, charac_data["manuellab_vers"], self.lab_vers))
         else:
-            algorithms.print_log_report("INFO","No lab version specified in {0}".format(log_msg_type))
+            algorithms.print_log_report("INFO", "No lab version specified in {0}".format(log_msg_type))
 
         if "structural" in charac_data:
             char_data = charac_data["structural"]
         else:
-            algorithms.print_log_report("WARNING","No structural data in  {0}".format(log_msg_type))
+            algorithms.print_log_report("WARNING", "No structural data in  {0}".format(log_msg_type))
             char_data = {}
 
         if "materialproperties" in charac_data:
             material_data = charac_data["materialproperties"]
         else:
-            algorithms.print_log_report("INFO","No material data in  {0}".format(log_msg_type))
+            algorithms.print_log_report("INFO", "No material data in  {0}".format(log_msg_type))
             material_data = {}
 
         if "metaproperties" in charac_data:
             meta_data = charac_data["metaproperties"]
         else:
-            algorithms.print_log_report("INFO","No metaproperties data in  {0}".format(log_msg_type))
+            algorithms.print_log_report("INFO", "No metaproperties data in  {0}".format(log_msg_type))
             meta_data = {}
 
         if char_data != None:
@@ -1054,13 +1141,13 @@ class Humanoid:
                     self.character_data[name] = 0.5
                 if name in char_data:
                     if mix:
-                        self.character_data[name] = (self.character_data[name]+char_data[name])/2
+                        self.character_data[name] = (self.character_data[name] + char_data[name])/2
                     else:
                         self.character_data[name] = char_data[name]
                 else:
                     if reset_unassigned:
                         if mix:
-                            self.character_data[name] = (self.character_data[name]+0.5)/2
+                            self.character_data[name] = (self.character_data[name] + 0.5)/2
                         else:
                             self.character_data[name] = 0.5
 
@@ -1074,26 +1161,31 @@ class Humanoid:
 
         self.update_character(mode = update_mode)
 
+
     def load_measures(self, filepath):
         char_data = algorithms.load_json_data(filepath, "Measures data")
         if not ("measures" in char_data):
-            algorithms.print_log_report("ERROR","This json has not the measures info, {0}".format(algorithms.simple_path(filepath)))
+            algorithms.print_log_report("ERROR", "This json has not the measures info, {0}".format(algorithms.simple_path(filepath)))
             return None
         c_data = char_data["measures"]
         return c_data
 
+
     def import_measures(self, filepath):
         char_data = self.load_measures(filepath)
         if char_data:
-            self.automodelling(use_measures_from_dict=char_data)
+            self.automodelling(use_measures_from_dict = char_data)
+
 
     def load_body_dermal_texture(self, filepath):
         self.mat_engine.load_texture(filepath, "body_derm")
 
+
     def load_body_displacement_texture(self, filepath):
         self.mat_engine.load_texture(filepath, "body_displ")
 
-    def combine_morphings(self, modifier, refresh_only=False, add_vertices_to_update=True):
+
+    def combine_morphings(self, modifier, refresh_only = False, add_vertices_to_update = True):
         """
         Mix shapekeys using smart combo algorithm.
         """
@@ -1118,9 +1210,10 @@ class Humanoid:
                     weights[i],
                     add_vertices_to_update)
 
-    def load_obj_prototype(self,obj_name):
 
-        obj_path = os.path.join(self.data_path,"shared_objs",obj_name+".obj")
+    def load_obj_prototype(self, obj_name):
+
+        obj_path = os.path.join(self.data_path, "shared_objs", obj_name + ".obj")
 
         bpy.ops.import_scene.obj(
             use_split_objects = False,
@@ -1128,8 +1221,9 @@ class Humanoid:
             split_mode = "OFF",
             axis_forward = "Y",
             axis_up = "Z",
-            filepath=obj_path
+            filepath = obj_path
             )
+
 
     def set_rest_pose(self):
         #posed_armat = self.sk_engine.get_armature()
@@ -1138,8 +1232,9 @@ class Humanoid:
         self.sk_engine.add_armature_modifier()
         self.sk_engine.move_up_armature_modifier()
 
+
     def add_corrective_smooth_modifier(self):
         obj = self.get_object()
-        parameters = {"show_viewport":True,"invert_vertex_group": True, "vertex_group":"head"}
+        parameters = {"show_viewport":True, "invert_vertex_group": True, "vertex_group":"head"}
         algorithms.new_modifier(obj, self.corrective_modifier_name, 'CORRECTIVE_SMOOTH', parameters)
 

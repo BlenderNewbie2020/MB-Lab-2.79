@@ -1,18 +1,24 @@
-# ManuelbastioniLAB - Copyright (C) 2015-2018 Manuel Bastioni
-# Official site: www.manuelbastioni.com
-# MB-Lab fork website : https://github.com/tawakemono/MB-Lab-2.79
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# ManuelbastioniLAB-Copyright (C) 2015-2018 Manuel Bastioni
 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MB-Lab-2.79 fork website : https://github.com/BlenderNewbie2020/MB-Lab-2.79
 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 3
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
 
 import os
 import bpy
@@ -24,6 +30,7 @@ import operator
 
 class MorphingEngine:
 
+
     def __init__(self, obj_name, character_config):
         time1 = time.time()
         data_path = algorithms.get_data_path()
@@ -31,9 +38,9 @@ class MorphingEngine:
         self.cache_form = []
         self.obj_name = obj_name
 
-        self.vertices_filename = character_config["name"]+"_verts.json"
-        self.expressions_filename = character_config["name"]+"_exprs.json"
-        self.morphs_filename = character_config["name"]+"_morphs.json"
+        self.vertices_filename = character_config["name"] + "_verts.json"
+        self.expressions_filename = character_config["name"] + "_exprs.json"
+        self.morphs_filename = character_config["name"] + "_morphs.json"
         self.morphs_filename_extra = character_config["morphs_extra_file"]
         self.shared_morphs_filename = character_config["shared_morphs_file"]
         self.shared_morphs_filename_extra = character_config["shared_morphs_extra_file"]
@@ -119,10 +126,11 @@ class MorphingEngine:
 
         #Checks:
         if len(self.final_form) != len(self.base_form):
-            algorithms.print_log_report("CRITICAL","Vertices database not coherent with the vertices in the obj {0}".format(self.obj_name))
+            algorithms.print_log_report("CRITICAL", "Vertices database not coherent with the vertices in the obj {0}".format(self.obj_name))
         #TODO: add more checks
 
-        algorithms.print_log_report("INFO","Databases loaded in {0} secs".format(time.time()-time1))
+        algorithms.print_log_report("INFO", "Databases loaded in {0} secs".format(time.time() - time1))
+
 
     def init_final_form(self):
         obj = self.get_object()
@@ -130,39 +138,46 @@ class MorphingEngine:
         for vert in obj.data.vertices:
                 self.final_form.append(vert.co.copy())
 
+
     def __repr__(self):
         return "MorphEngine {0} with {1} morphings".format(self.obj_name, len(self.morph_data))
+
 
     def get_object(self):
         if self.obj_name in bpy.data.objects:
             return bpy.data.objects[self.obj_name]
         return None
 
-    def error_msg(self, path):
-        algorithms.print_log_report("WARNING","Database file not found: {0}".format(algorithms.simple_path(path)))
 
-    def reset(self, update=True):
+    def error_msg(self, path):
+        algorithms.print_log_report("WARNING", "Database file not found: {0}".format(algorithms.simple_path(path)))
+
+
+    def reset(self, update = True):
         for i in range(len(self.base_form)):
             self.final_form[i] = self.base_form[i]
         for morph_name in self.morph_values.keys():
             self.morph_values[morph_name] = 0.0
         if update:
-            self.update(update_all_verts=True)
+            self.update(update_all_verts = True)
+
 
     def load_measures_database(self, measures_path):
-        m_database = algorithms.load_json_data(measures_path,"Measures data")
+        m_database = algorithms.load_json_data(measures_path, "Measures data")
         if m_database:
             self.measures_data = m_database["measures"]
             self.measures_relat_data = m_database["relations"]
             self.measures_score_weights = m_database["score_weights"]
             self.body_height_Z_parts = m_database["body_height_Z_parts"]
 
+
     def load_bboxes_database(self, bounding_box_path):
-        self.bbox_data = algorithms.load_json_data(bounding_box_path,"Bounding box data")
+        self.bbox_data = algorithms.load_json_data(bounding_box_path, "Bounding box data")
+
 
     def load_morphs_database(self, morph_data_path):
         time1 = time.time()
-        m_data = algorithms.load_json_data(morph_data_path,"Morph data")
+        m_data = algorithms.load_json_data(morph_data_path, "Morph data")
         if m_data:
             for morph_name, deltas in m_data.items():
                 morph_deltas = []
@@ -172,13 +187,13 @@ class MorphingEngine:
                     morph_deltas.append([d_data[0], t_delta])
                     modified_verts.add(d_data[0])
                 if morph_name in self.morph_data:
-                    algorithms.print_log_report("WARNING","Morph {0} duplicated while loading morphs from file".format(morph_name))
+                    algorithms.print_log_report("WARNING", "Morph {0} duplicated while loading morphs from file".format(morph_name))
 
                 self.morph_data[morph_name] = morph_deltas
                 self.morph_values[morph_name] = 0.0
                 self.morph_modified_verts[morph_name] = modified_verts
-            algorithms.print_log_report("INFO","Morph database {0} loaded in {1} secs".format(algorithms.simple_path(morph_data_path),time.time()-time1))
-            algorithms.print_log_report("INFO","Now local morph data contains {0} elements".format(len(self.morph_data)))
+            algorithms.print_log_report("INFO", "Morph database {0} loaded in {1} secs".format(algorithms.simple_path(morph_data_path), time.time() - time1))
+            algorithms.print_log_report("INFO", "Now local morph data contains {0} elements".format(len(self.morph_data)))
 
     #def apply_finishing_morph(self):
         #"""
@@ -191,9 +206,10 @@ class MorphingEngine:
         #if not self.forma_data:
             #self.forma_data = proxyengine.load_forma_database(self.morph_forma_path)
         #proxyengine.calculate_finishing_morph(obj, self.boundary_verts, self.forma_data, threshold=0.25)
-        #algorithms.print_log_report("INFO","Finishing applied in {0} secs".format(time.time()-time1))
+        #algorithms.print_log_report("INFO", "Finishing applied in {0} secs".format(time.time() - time1))
 
-    def calculate_measures(self,measure_name = None,vert_coords=None):
+
+    def calculate_measures(self, measure_name = None, vert_coords = None):
 
         if not vert_coords:
             vert_coords = self.final_form
@@ -207,8 +223,9 @@ class MorphingEngine:
         else:
             for measure_name in self.measures_data.keys():
                 measures[measure_name] = self.calculate_measures(measure_name, vert_coords)
-            algorithms.print_log_report("DEBUG","Measures calculated in {0} secs".format(time.time()-time1))
+            algorithms.print_log_report("DEBUG", "Measures calculated in {0} secs".format(time.time() - time1))
             return measures
+
 
     def calculate_proportions(self, measures):
 
@@ -217,29 +234,31 @@ class MorphingEngine:
         if "body_height_Z" in measures:
             if "buttock_girth" in measures:
                 if "chest_girth" in measures:
-                    p1 = round(measures["buttock_girth"]/measures["body_height_Z"],4)
-                    p2 = round(measures["chest_girth"]/measures["body_height_Z"],4)
-                    p3 = round(measures["waist_girth"]/measures["body_height_Z"],4)
-                    p4 = round(measures["upperarm_axillary_girth"]/measures["body_height_Z"],4)
-                    p5 = round(measures["upperleg_top_girth"]/measures["body_height_Z"],4)
-                    self.proportion_index = [p1,p2,p3,p4,p5]
+                    p1 = round(measures["buttock_girth"]/measures["body_height_Z"], 4)
+                    p2 = round(measures["chest_girth"]/measures["body_height_Z"], 4)
+                    p3 = round(measures["waist_girth"]/measures["body_height_Z"], 4)
+                    p4 = round(measures["upperarm_axillary_girth"]/measures["body_height_Z"], 4)
+                    p5 = round(measures["upperleg_top_girth"]/measures["body_height_Z"], 4)
+                    self.proportion_index = [p1, p2, p3, p4, p5]
                 else:
-                    algorithms.print_log_report("ERROR","The 'chest_girth' measure not present in the analyzed database")
+                    algorithms.print_log_report("ERROR", "The 'chest_girth' measure not present in the analyzed database")
             else:
-                algorithms.print_log_report("ERROR","The 'buttock_girth' measure not present in the analyzed database")
+                algorithms.print_log_report("ERROR", "The 'buttock_girth' measure not present in the analyzed database")
         else:
-            algorithms.print_log_report("ERROR","The 'body_height_Z' measure not present in the analyzed database")
+            algorithms.print_log_report("ERROR", "The 'body_height_Z' measure not present in the analyzed database")
 
-    def compare_file_proportions(self,filepath):
-        char_data = algorithms.load_json_data(filepath,"Proportions data")
+
+    def compare_file_proportions(self, filepath):
+        char_data = algorithms.load_json_data(filepath, "Proportions data")
         if "proportion_index" in char_data:
             v1 = mathutils.Vector(self.proportion_index)
             v2 = mathutils.Vector(char_data["proportion_index"])
             delta_v = v2-v1
 
-            return (delta_v.length,filepath)
+            return (delta_v.length, filepath)
         else:
-            algorithms.print_log_report("INFO","File {0} does not contain proportions".format(algorithms.simple_path(filepath)))
+            algorithms.print_log_report("INFO", "File {0} does not contain proportions".format(algorithms.simple_path(filepath)))
+
 
     def compare_data_proportions(self):
         scores = []
@@ -248,12 +267,13 @@ class MorphingEngine:
             for database_file in os.listdir(self.bodies_data_path):
                 body_data, extension = os.path.splitext(database_file)
                 if "json" in extension:
-                    scores.append(self.compare_file_proportions(os.path.join(self.bodies_data_path,database_file)))
-            scores.sort(key=operator.itemgetter(0), reverse=False)
-            algorithms.print_log_report("INFO","Measures compared with database in {0} seconds".format(time.time()-time1))
+                    scores.append(self.compare_file_proportions(os.path.join(self.bodies_data_path, database_file)))
+            scores.sort(key = operator.itemgetter(0), reverse = False)
+            algorithms.print_log_report("INFO", "Measures compared with database in {0} seconds".format(time.time() - time1))
         else:
-            algorithms.print_log_report("WARNING","Bodies database not found")
+            algorithms.print_log_report("WARNING", "Bodies database not found")
         return scores
+
 
     def correct_morphs(self, names):
         morph_values_cache = {}
@@ -285,6 +305,7 @@ class MorphingEngine:
                         morph_values_cache[morph_name])
         self.update()
 
+
     def convert_all_to_blshapekeys(self):
 
         #TODO: re-enable the finishing (finish = True) after some improvements
@@ -303,24 +324,25 @@ class MorphingEngine:
         for vert in obj.data.vertices:
             stored_vertices.append(mathutils.Vector(vert.co))
 
-        algorithms.print_log_report("INFO","Storing neutral character...OK")
+        algorithms.print_log_report("INFO", "Storing neutral character...OK")
         counter = 0
         for morph_name in sorted(self.morph_data.keys()):
             if "Expression" in morph_name:
                 counter += 1
                 self.calculate_morph(morph_name, 1.0)
-                algorithms.print_log_report("INFO","Converting {} to shapekey".format(morph_name))
-                self.update(update_all_verts=True)
+                algorithms.print_log_report("INFO", "Converting {} to shapekey".format(morph_name))
+                self.update(update_all_verts = True)
                 new_sk = algorithms.new_shapekey_from_current_vertices(obj, morph_name)
                 new_sk.value = 0
 
                 #Restore the neutral expression
                 for i in range(len(self.final_form)):
                     self.final_form[i] = stored_vertices[i]
-                self.update(update_all_verts=True)
-        algorithms.print_log_report("INFO","Successfully converted {0} morphs in shapekeys".format(counter))
+                self.update(update_all_verts = True)
+        algorithms.print_log_report("INFO", "Successfully converted {0} morphs in shapekeys".format(counter))
 
-    def update(self, update_all_verts=False):
+
+    def update(self, update_all_verts = False):
         obj = self.get_object()
         vertices = obj.data.vertices
         if update_all_verts == True:
@@ -330,26 +352,30 @@ class MorphingEngine:
             for i in self.verts_to_update:
                 vertices[i].co = self.final_form[i]
 
+
     def copy_in_cache(self):
         obj = self.get_object()
         self.clean_the_cache()
         vertices = obj.data.vertices
         for i in range(len(self.final_form)):
             self.cache_form.append(vertices[i].co.copy())
-        algorithms.print_log_report("INFO","Mesh cached")
+        algorithms.print_log_report("INFO", "Mesh cached")
+
 
     def copy_from_cache(self):
         if len(self.final_form) == len(self.cache_form):
             for i in range(len(self.final_form)):
                 self.final_form[i] = self.cache_form[i]
-            algorithms.print_log_report("INFO","Mesh copied from cache")
+            algorithms.print_log_report("INFO", "Mesh copied from cache")
         else:
-            algorithms.print_log_report("WARNING","Cached mesh not found")
+            algorithms.print_log_report("WARNING", "Cached mesh not found")
+
 
     def clean_the_cache(self):
         self.cache_form = []
 
-    def calculate_morph(self, morph_name, val, add_vertices_to_update=True):
+
+    def calculate_morph(self, morph_name, val, add_vertices_to_update = True):
 
         if morph_name in self.morph_data:
             real_val = val - self.morph_values[morph_name]
@@ -363,5 +389,5 @@ class MorphingEngine:
                     self.verts_to_update = self.verts_to_update.union(self.morph_modified_verts[morph_name])
                 self.morph_values[morph_name] = val
         else:
-            algorithms.print_log_report("DEBUG","Morph data {0} not found".format(morph_name))
+            algorithms.print_log_report("DEBUG", "Morph data {0} not found".format(morph_name))
 
