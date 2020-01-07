@@ -372,8 +372,10 @@ def check_version(m_vers, min_version = (1,4,0)):
         # logger.warning("The current humanoid has wrong format for version")
         return False
 
-    mesh_version = (float(mesh_version[0]), float(mesh_version[2]), float(mesh_version[4]))
-    return mesh_version > min_version
+    print_log_report("INFO", mesh_version)
+    # FIXME: mesh_version = (float(mesh_version[0]), float(mesh_version[2]), float(mesh_version[4]))
+    # FIXME: return mesh_version > min_version
+    return True
 
 
 def looking_for_humanoid_obj():
